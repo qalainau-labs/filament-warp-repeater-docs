@@ -38,5 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Ctrl/Cmd+D.
 - Unsaved changes (`->warpChangeMarks()`): marks on changed cells, changed lines and new lines, with the number of
   changed, new and removed lines above the repeater. The marks are reset when the form is saved.
+- Search (`->warpSearch()`): a search field above the repeater that highlights the matching cells in every line and
+  moves between them. With a sticky header, the tools above the repeater stay on screen too.
 - Narrow containers use Filament's stacked layout, like the native repeater.
 - Automatic fallback to the regular Filament repeater for layouts other than `table()` and for empty repeaters.

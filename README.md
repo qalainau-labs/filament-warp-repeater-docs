@@ -50,6 +50,7 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 - **Column summaries**: `->warpSummary()` on a field adds a summary row under its column (sum, average, min, max, count, checked), updated as you type.
 - **Spreadsheet editing**: `->warpSpreadsheet()` adds Enter and arrow keys to move between lines, pasting tables from Excel or Google Sheets (adding lines as needed), range selection, copy, and fill down with Ctrl/Cmd+D.
 - **Unsaved changes**: `->warpChangeMarks()` marks the cells and lines changed since the last save, and counts changed, new and removed lines.
+- **Search**: `->warpSearch()` adds a search field that finds text in every line, including the ones drawn on the canvas, which the browser's own find cannot see.
 - **Theme aware**: colors, fonts, spacing and icons come from Filament's CSS, so custom themes and dark mode work without configuration.
 - **Automatic fallback**: layouts other than `table()` and empty repeaters render the regular Filament repeater with no change on your side.
 
@@ -350,6 +351,28 @@ If saving fails with validation errors, the marks stay.
 
 The reference values live in the browser. Reloading the page starts again from the saved values, the same as the form itself.
 
+## Search
+
+The browser's find (Ctrl/Cmd+F) only sees text in the page, and the lines that are drawn on the canvas are not text. `warpSearch()` adds a search field above the repeater that looks through every line:
+
+```php
+Repeater::make('lines')
+    ->table([...])
+    ->schema([...])
+    ->warp()
+    ->warpSearch();
+```
+
+![Search](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/search.png)
+
+- Matching cells are highlighted, and the current match is outlined and scrolled into view. The position ("2 of 14") is shown next to the field.
+- Enter and Shift+Enter, or the arrow buttons, move to the next and previous match. Escape clears the search.
+- Ctrl/Cmd+F while the focus is in the repeater moves to the search field. Elsewhere on the page it opens the browser's find as usual.
+- The search looks at what the cells show: option labels for selects, the displayed date for date pickers, and the text of inputs. Case and accents are ignored (`zebra` finds `Zébra`). Toggles, checkboxes and password fields are not searched.
+- The matches follow the values as you type, paste, add or delete lines.
+
+With `warpStickyHeader()`, the search field and the other tools above the repeater stay on screen together with the header row.
+
 ## Supported fields
 
 Every field works, because the fields you interact with are always Filament's own. The canvas only has to draw the rows you are not interacting with:
@@ -377,7 +400,7 @@ Warp Repeater only replaces the rows. In these states the regular Filament repea
 The canvas cannot do everything the DOM can. These are the known differences from the native repeater:
 
 - **Screen readers** cannot read the rows that are drawn on the canvas. The first, the last, the hovered and the focused rows are real fields, but the others are not part of the accessibility tree. If your users rely on assistive technology, keep the native repeater for them. `->warp()` accepts a closure, so you can base it on a user preference.
-- **Browser find** (Cmd/Ctrl+F) does not find the values of rows that are drawn on the canvas.
+- **Browser find** (Cmd/Ctrl+F) does not find the values of rows that are drawn on the canvas. Use `warpSearch()` to search every line.
 - **Selecting text with the mouse across several rows** is not possible. Inside one row it works, because the row under the pointer is real.
 - **Fields whose display is built in the browser** other than the ones listed above, for example rich editors, file uploads and color pickers, are drawn from the HTML that Filament renders on the server, which may look plainer than the initialized field. They become fully interactive when the pointer is over the row.
 
