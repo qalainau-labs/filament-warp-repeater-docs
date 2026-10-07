@@ -50,11 +50,11 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 
 ## Screenshots
 
-The row under the pointer is made of real Filament fields, here with a multiple select open. The other rows are drawn on the canvas:
+Multi-level rows, two lines per item. The item under the pointer is made of real Filament fields, here with a multiple select open; the other items are drawn on the canvas:
 
-![Real fields on top of the canvas](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/real-fields.png)
+![Multi-level rows with real fields on top of the canvas](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/real-fields.png)
 
-Multi-level rows, two lines per item:
+The same items without the pointer, all drawn on the canvas:
 
 ![Multi-level rows](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/multi-level-rows.png)
 
