@@ -25,7 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Drag-and-drop reordering through Filament's `reorder` action.
 - Sticky header (`->warpStickyHeader()`): the header row stays below the panel's topbar (or at the top of a modal's
   scrolling area) while the page scrolls.
+- Saving with validation errors scrolls to the first line with an error, turns it into real fields and focuses the
+  field, like the native form does for fields on screen.
+- Error navigation (`->warpErrorNavigation()`): "n lines have errors" with previous and next buttons above the
+  repeater, and markers for the lines with errors along the table. English and Japanese translations.
 - Multi-level rows (`->warpMultiLevel()`): each item spans several lines on a grid, with a multi-level header
   (`HeaderCell`). Fields are placed with `->warpCell()`.
+- Column summaries (`->warpSummary()` with `Summary::sum()`, `average()`, `min()`, `max()`, `count()` and `checked()`): a
+  summary row under the table, computed in the browser from the Livewire state and updated as you type.
 - Narrow containers use Filament's stacked layout, like the native repeater.
 - Automatic fallback to the regular Filament repeater for layouts other than `table()` and for empty repeaters.

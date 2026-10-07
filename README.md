@@ -45,7 +45,9 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
   - Drag-and-drop reordering, with Filament's own `reorder` action.
   - Narrow containers use Filament's stacked layout (each item as a card), like the native repeater.
 - **Sticky header**: `->warpStickyHeader()` keeps the header row on screen while the page scrolls, so you always know which column you are typing in, even 500 lines down. The native repeater has no equivalent.
+- **Validation errors**: saving scrolls to the first line with an error, like the native form. `->warpErrorNavigation()` adds "3 lines have errors" with previous and next buttons, and error markers along the table.
 - **Multi-level rows**: show each item on several lines, ledger style, with a multi-level header. The native repeater has no equivalent.
+- **Column summaries**: `->warpSummary()` on a field adds a summary row under its column (sum, average, min, max, count, checked), updated as you type.
 - **Theme aware**: colors, fonts, spacing and icons come from Filament's CSS, so custom themes and dark mode work without configuration.
 - **Automatic fallback**: layouts other than `table()` and empty repeaters render the regular Filament repeater with no change on your side.
 
@@ -148,7 +150,7 @@ Repeater::make('lines')->warp(fn (): bool => auth()->user()->prefersFastForms())
 
 `$repeater->isWarp()` tells you whether Warp Repeater is enabled for a repeater.
 
-### Sticky header
+## Sticky header
 
 ```php
 Repeater::make('lines')
@@ -159,6 +161,28 @@ Repeater::make('lines')
 ```
 
 `warpStickyHeader()` keeps the header row below the panel's topbar while the page scrolls, until the last item scrolls past. Inside a modal or slide-over, the header sticks to the top of its scrolling area instead. Multi-level headers stick as a whole. It accepts a boolean or a closure and is off by default, like the native repeater, which has no sticky header.
+
+## Validation errors
+
+When saving shows validation errors, Filament scrolls to the first field with an error. Lines that are drawn on the canvas have no fields to scroll to, so Warp Repeater does it for them: it scrolls to the first line with an error, turns it into real fields, highlights it and focuses the field. This is always on, so the form behaves like the native one.
+
+With hundreds of lines, finding the other errors is the hard part. `warpErrorNavigation()` helps with that:
+
+```php
+Repeater::make('lines')
+    ->table([...])
+    ->schema([...])
+    ->warp()
+    ->warpErrorNavigation();
+```
+
+- Above the repeater: "3 lines have errors", with buttons that jump to the previous and next line with errors, and the position ("2 of 3").
+- On the right edge of the table: one marker per line with errors, placed relative to the whole repeater, like the markers on an editor's scrollbar. They stay in view while the repeater is on screen, and a click jumps to the line.
+- Nothing is shown while there are no errors.
+
+![Error navigation](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/validation-errors.png)
+
+The labels come from the package's translations (English and Japanese). To change them, publish the translations with `php artisan vendor:publish --tag=filament-warp-repeater-translations`.
 
 ## Multi-level rows
 
@@ -196,6 +220,60 @@ Repeater::make('lines')
 - The column widths of the grid are computed from the content, the same way as in the regular layout.
 
 Multi-level rows are a Warp Repeater layout. When Warp Repeater is disabled, when it falls back to the native repeater, and in narrow containers where Filament stacks each item as a card, the items are shown in the regular layout.
+
+## Column summaries
+
+Add `->warpSummary()` to a field in the repeater's schema to show a summary row under its column. The row is part of the table, below the last line, in the header's colors.
+
+```php
+use Qalainau\FilamentWarpRepeater\Summaries\Summary;
+
+Repeater::make('lines')
+    ->table([
+        TableColumn::make('Product'),
+        TableColumn::make('Quantity'),
+        TableColumn::make('Unit price'),
+        TableColumn::make('Taxable'),
+    ])
+    ->schema([
+        Select::make('product_id')->options(...),
+        TextInput::make('quantity')
+            ->numeric()
+            ->warpSummary(Summary::sum()->label('Total')),
+        TextInput::make('unit_price')
+            ->numeric()
+            ->prefix('$')
+            ->warpSummary([
+                Summary::average()->prefix('$')->decimals(2),
+                Summary::max()->prefix('$')->decimals(2),
+            ]),
+        Toggle::make('taxable')
+            ->warpSummary(Summary::checked()),
+    ])
+    ->warp();
+```
+
+![Column summaries](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/column-summaries.png)
+
+| Summary | Shows |
+| --- | --- |
+| `Summary::sum()` | The total of the numeric values. |
+| `Summary::average()` | The average of the numeric values. Empty fields are not counted. |
+| `Summary::min()`, `Summary::max()` | The lowest and highest numeric value. |
+| `Summary::count()` | The number of lines with a value (not empty, not `false`, not an empty array). |
+| `Summary::checked()` | The number of lines that are on (toggles, checkboxes). |
+
+- `->label()` replaces the default label ("Sum", "Average", ...). Pass `''` to show the value alone.
+- `->prefix()` and `->suffix()` are added around the value, for example a currency or a unit.
+- `->decimals()` fixes the number of decimals. Without it, values show up to 2 decimals. Numbers are formatted for the page's language (`<html lang>`), with thousands separators.
+- Pass an array to show several summaries in one column, one per line.
+- Every option accepts a closure, evaluated like the field's own options.
+
+The values are computed in the browser from the repeater's Livewire state, for all the lines, including the ones that are drawn on the canvas. They follow every change as you type, before anything is sent to the server, as well as lines that are added, cloned or deleted, and values set by `live()` fields and `afterStateUpdated()`. Values like `"1,250.50"` are read as numbers, and fields that are not numbers are skipped by sum, average, min and max.
+
+With multi-level rows, each summary is placed under its field, at the same position on the grid, and footer lines without any summary are left out. In narrow containers, where Filament stacks each item as a card, the summary row lists each summarized column by name with its values.
+
+The summary row is a Warp Repeater feature. When Warp Repeater is disabled or falls back to the native repeater, `warpSummary()` has no effect.
 
 ## Supported fields
 
