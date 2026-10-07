@@ -49,6 +49,7 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 - **Multi-level rows**: show each item on several lines, ledger style, with a multi-level header. The native repeater has no equivalent.
 - **Column summaries**: `->warpSummary()` on a field adds a summary row under its column (sum, average, min, max, count, checked), updated as you type.
 - **Spreadsheet editing**: `->warpSpreadsheet()` adds Enter and arrow keys to move between lines, pasting tables from Excel or Google Sheets (adding lines as needed), range selection, copy, and fill down with Ctrl/Cmd+D.
+- **Unsaved changes**: `->warpChangeMarks()` marks the cells and lines changed since the last save, and counts changed, new and removed lines.
 - **Theme aware**: colors, fonts, spacing and icons come from Filament's CSS, so custom themes and dark mode work without configuration.
 - **Automatic fallback**: layouts other than `table()` and empty repeaters render the regular Filament repeater with no change on your side.
 
@@ -319,6 +320,35 @@ Notes:
 - Enter no longer submits the form from a field in the repeater, and ↑ / ↓ no longer step the value of number fields.
 - Filament's `DeleteAction` uses Ctrl/Cmd+D as its keyboard shortcut. While a range is selected in the repeater, Ctrl/Cmd+D fills down instead. Without a range, the shortcut is left to Filament.
 - The repeater's items are filled in order, with columns counted in the order of the schema, the same as `table()` columns.
+
+## Unsaved changes
+
+In a long table it is easy to lose track of what you have changed. `warpChangeMarks()` marks it until the form is saved:
+
+```php
+Repeater::make('lines')
+    ->table([...])
+    ->schema([...])
+    ->warp()
+    ->warpChangeMarks();
+```
+
+![Unsaved changes](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/unsaved-changes.png)
+
+- A changed cell gets a small triangle in its top-left corner, and its line a bar on the left edge (warning color).
+- A new line, added with "Add", cloned or pasted, gets a bar in the success color.
+- Above the repeater: "3 changed lines", "1 new line", "2 removed lines". Click "changed" or "new" to jump to those lines one after another.
+- Changing a value back to what it was removes the mark. Values are compared as the form would save them, so `23` and `"23"`, or an empty string and `null`, are the same.
+
+The marks compare each line with its values when the repeater was first shown, and follow every change as you type, before anything is sent to the server. When the form is saved, the current values become the new reference. A save is any Livewire call to one of the `resetOn` methods that ends without validation errors: by default `save` (edit pages) and `create` (create pages). Pass your own method names if your form saves differently:
+
+```php
+->warpChangeMarks(resetOn: ['save', 'saveDraft'])
+```
+
+If saving fails with validation errors, the marks stay.
+
+The reference values live in the browser. Reloading the page starts again from the saved values, the same as the form itself.
 
 ## Supported fields
 
