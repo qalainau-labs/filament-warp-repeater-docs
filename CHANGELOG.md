@@ -41,5 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Search (`->warpSearch()`): a search field above the repeater that highlights the matching cells in every line and
   moves between them. With a sticky header, the tools above the repeater stay on screen too.
 - Line numbers (`->warpRowNumbers()`): a first column with the number of each line.
+- Fixed height (`->warpHeight()`): the lines scroll inside the repeater, while the header and the summary row stay in place.
 - Narrow containers use Filament's stacked layout, like the native repeater.
 - Automatic fallback to the regular Filament repeater for layouts other than `table()` and for empty repeaters.

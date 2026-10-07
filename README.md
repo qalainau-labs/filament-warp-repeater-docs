@@ -52,6 +52,7 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 - **Unsaved changes**: `->warpChangeMarks()` marks the cells and lines changed since the last save, and counts changed, new and removed lines.
 - **Search**: `->warpSearch()` adds a search field that finds text in every line, including the ones drawn on the canvas, which the browser's own find cannot see.
 - **Line numbers**: `->warpRowNumbers()` numbers the lines in a first column, so "line 214" in a validation message or a phone call is easy to find.
+- **Fixed height**: `->warpHeight(480)` scrolls the lines inside the repeater, so the header, the summary row and the fields after the repeater stay in place.
 - **Theme aware**: colors, fonts, spacing and icons come from Filament's CSS, so custom themes and dark mode work without configuration.
 - **Automatic fallback**: layouts other than `table()` and empty repeaters render the regular Filament repeater with no change on your side.
 
@@ -393,6 +394,28 @@ Repeater::make('lines')
 - The header shows `#`, with "Line number" for screen readers (translatable).
 - With multi-level rows, the number spans all the lines of an item. In narrow containers, where Filament stacks each item as a card, it is shown as `#12` at the top of the card.
 - The column is as wide as the largest number, measured in the same way as the other columns.
+
+## Fixed height
+
+By default the repeater is as tall as its lines, and the page scrolls. `warpHeight()` gives the lines a fixed height and scrolls them inside the repeater instead, like a spreadsheet:
+
+```php
+Repeater::make('lines')
+    ->table([...])
+    ->schema([...])
+    ->warp()
+    ->warpHeight(480);      // pixels, or any CSS length: '60vh', '30rem'
+```
+
+![Fixed height](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/fixed-height.png)
+
+- Only the lines scroll. The header row, the summary row (`warpSummary()`), the "Add" button and the rest of the form stay where they are, so the fields after a 1,000-line repeater are one scroll away.
+- When the lines are shorter than the height, the repeater is just as tall as its lines.
+- Everything that moves to a line scrolls inside the repeater first, then the page if needed: saving with validation errors, the error navigation, search, Enter and the arrow keys of `warpSpreadsheet()`.
+- The scroll position stays when Livewire updates the form.
+- With narrow containers (Filament's stacked layout), the cards scroll inside the same height.
+
+With classic scrollbars (Windows, or macOS set to always show scrollbars), the scrollbar is drawn over the right edge of the last column, which is usually the item actions. It is a thin scrollbar where the browser supports `scrollbar-width`.
 
 ## Supported fields
 
