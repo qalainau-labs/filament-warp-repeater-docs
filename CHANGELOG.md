@@ -33,5 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`HeaderCell`). Fields are placed with `->warpCell()`.
 - Column summaries (`->warpSummary()` with `Summary::sum()`, `average()`, `min()`, `max()`, `count()` and `checked()`): a
   summary row under the table, computed in the browser from the Livewire state and updated as you type.
+- Spreadsheet editing (`->warpSpreadsheet()`): Enter and arrow keys move between lines, tables pasted from a
+  spreadsheet fill the cells and add lines, Shift+click selects a range to copy as tab-separated text or fill down with
+  Ctrl/Cmd+D.
 - Narrow containers use Filament's stacked layout, like the native repeater.
 - Automatic fallback to the regular Filament repeater for layouts other than `table()` and for empty repeaters.

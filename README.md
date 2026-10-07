@@ -48,6 +48,7 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 - **Validation errors**: saving scrolls to the first line with an error, like the native form. `->warpErrorNavigation()` adds "3 lines have errors" with previous and next buttons, and error markers along the table.
 - **Multi-level rows**: show each item on several lines, ledger style, with a multi-level header. The native repeater has no equivalent.
 - **Column summaries**: `->warpSummary()` on a field adds a summary row under its column (sum, average, min, max, count, checked), updated as you type.
+- **Spreadsheet editing**: `->warpSpreadsheet()` adds Enter and arrow keys to move between lines, pasting tables from Excel or Google Sheets (adding lines as needed), range selection, copy, and fill down with Ctrl/Cmd+D.
 - **Theme aware**: colors, fonts, spacing and icons come from Filament's CSS, so custom themes and dark mode work without configuration.
 - **Automatic fallback**: layouts other than `table()` and empty repeaters render the regular Filament repeater with no change on your side.
 
@@ -274,6 +275,50 @@ The values are computed in the browser from the repeater's Livewire state, for a
 With multi-level rows, each summary is placed under its field, at the same position on the grid, and footer lines without any summary are left out. In narrow containers, where Filament stacks each item as a card, the summary row lists each summarized column by name with its values.
 
 The summary row is a Warp Repeater feature. When Warp Repeater is disabled or falls back to the native repeater, `warpSummary()` has no effect.
+
+## Spreadsheet editing
+
+Line items often come from a spreadsheet, and long tables are faster to fill with the keyboard. `warpSpreadsheet()` adds the keys people expect from Excel and Google Sheets:
+
+```php
+Repeater::make('lines')
+    ->table([...])
+    ->schema([...])
+    ->warp()
+    ->warpSpreadsheet();
+```
+
+![Spreadsheet editing](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/spreadsheet.png)
+
+| Keys | In a text or number field |
+| --- | --- |
+| Enter / Shift+Enter | Move to the same column on the next / previous line. |
+| ↓ / ↑ | Same as Enter / Shift+Enter. |
+| Shift+click, Shift+↓ / Shift+↑ | Select a range of cells, from the focused field. |
+| Ctrl/Cmd+C | With a range selected: copy it as tab-separated text, ready to paste into a spreadsheet. |
+| Ctrl/Cmd+V | Paste cells copied from a spreadsheet (see below). |
+| Ctrl/Cmd+D | With a range selected: copy the values of its first line to the other lines. |
+| Escape | Clear the range. |
+
+Tab and Shift+Tab still move between fields, and the arrow keys inside dropdowns, date pickers and select search fields keep working as usual.
+
+**Pasting.** Copy cells in Excel, Numbers or Google Sheets and paste them into any field of the repeater. The values fill the fields to the right and below, and lines are added at the end when there are not enough of them, up to `maxItems()`. To paste one value into many cells, select a range and paste. Each value is turned into the field's state:
+
+- Selects accept the option's key or its label (any case). Multiple selects take a comma-separated list. Values that are not an option are skipped.
+- Toggles and checkboxes are on for `TRUE`, `1`, `yes`, `y`, `on`, `x` or `✓`, and off for anything else.
+- Numeric text inputs drop thousands separators, currency symbols and units: `$1,250.50` becomes `1250.50`.
+- Date pickers read any date that PHP can parse, and store it in the field's format.
+- Disabled, read-only and hidden fields are skipped.
+
+Copying a range works the other way: selects are copied as their labels and toggles as `TRUE` / `FALSE`, so the cells paste back as they were.
+
+Pasting and filling down run on the server, as a single Filament action on the repeater. New lines are added the same way as with the "Add" button, so default values apply, and every changed field runs its `afterStateUpdated()` hooks, so `live()` totals are recalculated. Nothing is saved until the form is saved.
+
+Notes:
+
+- Enter no longer submits the form from a field in the repeater, and ↑ / ↓ no longer step the value of number fields.
+- Filament's `DeleteAction` uses Ctrl/Cmd+D as its keyboard shortcut. While a range is selected in the repeater, Ctrl/Cmd+D fills down instead. Without a range, the shortcut is left to Filament.
+- The repeater's items are filled in order, with columns counted in the order of the schema, the same as `table()` columns.
 
 ## Supported fields
 
