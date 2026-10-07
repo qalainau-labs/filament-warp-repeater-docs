@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and `afterStateUpdated()` hooks work as usual.
 - Validation errors under the fields, with rows that grow to fit them.
 - Drag-and-drop reordering through Filament's `reorder` action.
+- Sticky header (`->warpStickyHeader()`): the header row stays below the panel's topbar (or at the top of a modal's
+  scrolling area) while the page scrolls.
 - Multi-level rows (`->warpMultiLevel()`): each item spans several lines on a grid, with a multi-level header
   (`HeaderCell`). Fields are placed with `->warpCell()`.
 - Narrow containers use Filament's stacked layout, like the native repeater.

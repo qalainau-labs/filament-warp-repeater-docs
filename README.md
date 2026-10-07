@@ -2,7 +2,7 @@
 
 # Warp Repeater
 
-**Fast Filament table repeaters for long forms: the rows of a `Repeater::table()` are drawn on a `<canvas>`, with ledger-style multi-level rows that the native repeater does not have, while every field still behaves exactly like Filament's own.**
+**Fast Filament table repeaters for long forms: the rows of a `Repeater::table()` are drawn on a `<canvas>`, with a sticky header and ledger-style multi-level rows that the native repeater does not have, while every field still behaves exactly like Filament's own.**
 
 <a href="https://filament-warp-repeater.webllsystem.com/"><img src="https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/live-demo.png" alt="Try the live demo: filament-warp-repeater.webllsystem.com" width="592"></a>
 
@@ -44,6 +44,7 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
   - Validation errors appear under the fields, and the rows grow to fit them.
   - Drag-and-drop reordering, with Filament's own `reorder` action.
   - Narrow containers use Filament's stacked layout (each item as a card), like the native repeater.
+- **Sticky header**: `->warpStickyHeader()` keeps the header row on screen while the page scrolls, so you always know which column you are typing in, even 500 lines down. The native repeater has no equivalent.
 - **Multi-level rows**: show each item on several lines, ledger style, with a multi-level header. The native repeater has no equivalent.
 - **Theme aware**: colors, fonts, spacing and icons come from Filament's CSS, so custom themes and dark mode work without configuration.
 - **Automatic fallback**: layouts other than `table()` and empty repeaters render the regular Filament repeater with no change on your side.
@@ -142,6 +143,18 @@ Repeater::make('lines')->warp(fn (): bool => auth()->user()->prefersFastForms())
 ```
 
 `$repeater->isWarp()` tells you whether Warp Repeater is enabled for a repeater.
+
+### Sticky header
+
+```php
+Repeater::make('lines')
+    ->table([...])
+    ->schema([...])
+    ->warp()
+    ->warpStickyHeader();
+```
+
+`warpStickyHeader()` keeps the header row below the panel's topbar while the page scrolls, until the last item scrolls past. Inside a modal or slide-over, the header sticks to the top of its scrolling area instead. Multi-level headers stick as a whole. It accepts a boolean or a closure and is off by default, like the native repeater, which has no sticky header.
 
 ## Multi-level rows
 
