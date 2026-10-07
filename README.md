@@ -53,6 +53,7 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 - **Search**: `->warpSearch()` adds a search field that finds text in every line, including the ones drawn on the canvas, which the browser's own find cannot see.
 - **Line numbers**: `->warpRowNumbers()` numbers the lines in a first column, so "line 214" in a validation message or a phone call is easy to find.
 - **Fixed height**: `->warpHeight(480)` scrolls the lines inside the repeater, so the header, the summary row and the fields after the repeater stay in place.
+- **Wide tables with frozen columns**: `->warpTableWidth(1800)->warpFrozenColumns(1)` scrolls tables with many columns horizontally while the first columns stay in view.
 - **Theme aware**: colors, fonts, spacing and icons come from Filament's CSS, so custom themes and dark mode work without configuration.
 - **Automatic fallback**: layouts other than `table()` and empty repeaters render the regular Filament repeater with no change on your side.
 
@@ -416,6 +417,32 @@ Repeater::make('lines')
 - With narrow containers (Filament's stacked layout), the cards scroll inside the same height.
 
 With classic scrollbars (Windows, or macOS set to always show scrollbars), the scrollbar is drawn over the right edge of the last column, which is usually the item actions. It is a thin scrollbar where the browser supports `scrollbar-width`.
+
+## Wide tables and frozen columns
+
+A repeater with many columns squeezes every field into the width of the form. `warpTableWidth()` gives the table a minimum width and scrolls it horizontally when the form is narrower. `warpFrozenColumns()` keeps the first columns in view while you scroll, like frozen columns in a spreadsheet:
+
+```php
+Repeater::make('lines')
+    ->table([
+        TableColumn::make('Product'),
+        TableColumn::make('SKU'),
+        TableColumn::make('Quantity'),
+        // ... ten more columns
+    ])
+    ->schema([...])
+    ->warp()
+    ->warpTableWidth(1800)      // pixels, or any CSS length: '120rem'
+    ->warpFrozenColumns(1);     // the first column (Product) stays in view
+```
+
+![Wide tables and frozen columns](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/frozen-columns.png)
+
+- The header row, the lines and the summary row scroll together. The column widths are computed from the content for the given width, as usual.
+- `warpFrozenColumns(n)` freezes the first `n` columns of `table()`. The line numbers (`warpRowNumbers()`) and the reorder handle are always frozen with them. A thin shadow marks the edge while the table is scrolled.
+- Tab and Shift+Tab move through all the fields, and the browser scrolls the table to the focused one.
+- `warpStickyHeader()` keeps working: the header row follows the page while staying aligned with the scrolled columns. `warpHeight()` can be combined too.
+- In narrow containers, where Filament stacks each item as a card, there is nothing to scroll and both settings are ignored. They are also ignored for multi-level rows.
 
 ## Supported fields
 
