@@ -51,6 +51,7 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 - **Spreadsheet editing**: `->warpSpreadsheet()` adds Enter and arrow keys to move between lines, pasting tables from Excel or Google Sheets (adding lines as needed), range selection, copy, and fill down with Ctrl/Cmd+D.
 - **Unsaved changes**: `->warpChangeMarks()` marks the cells and lines changed since the last save, and counts changed, new and removed lines.
 - **Search**: `->warpSearch()` adds a search field that finds text in every line, including the ones drawn on the canvas, which the browser's own find cannot see.
+- **Line numbers**: `->warpRowNumbers()` numbers the lines in a first column, so "line 214" in a validation message or a phone call is easy to find.
 - **Theme aware**: colors, fonts, spacing and icons come from Filament's CSS, so custom themes and dark mode work without configuration.
 - **Automatic fallback**: layouts other than `table()` and empty repeaters render the regular Filament repeater with no change on your side.
 
@@ -372,6 +373,26 @@ Repeater::make('lines')
 - The matches follow the values as you type, paste, add or delete lines.
 
 With `warpStickyHeader()`, the search field and the other tools above the repeater stay on screen together with the header row.
+
+## Line numbers
+
+`warpRowNumbers()` adds a column with the number of each line, before the reorder handle:
+
+```php
+Repeater::make('lines')
+    ->table([...])
+    ->schema([...])
+    ->warp()
+    ->warpRowNumbers();
+```
+
+![Line numbers](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/line-numbers.png)
+
+- The numbers are the position in the repeater, starting at 1. They follow the order as you reorder, add, clone or delete lines.
+- They are not part of the form's state and are not saved.
+- The header shows `#`, with "Line number" for screen readers (translatable).
+- With multi-level rows, the number spans all the lines of an item. In narrow containers, where Filament stacks each item as a card, it is shown as `#12` at the top of the card.
+- The column is as wide as the largest number, measured in the same way as the other columns.
 
 ## Supported fields
 
