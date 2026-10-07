@@ -4,6 +4,10 @@
 
 **Fast Filament table repeaters for long forms: the rows of a `Repeater::table()` are drawn on a `<canvas>`, with ledger-style multi-level rows that the native repeater does not have, while every field still behaves exactly like Filament's own.**
 
+<a href="https://filament-warp-repeater.webllsystem.com/"><img src="https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/live-demo.png" alt="Try the live demo: filament-warp-repeater.webllsystem.com" width="592"></a>
+
+Edit line items, open the searchable selects and date pickers, reorder lines and compare with the native repeater side by side at **[filament-warp-repeater.webllsystem.com](https://filament-warp-repeater.webllsystem.com/)**. No sign-up needed; the data is reset every hour.
+
 A table repeater with a few hundred items gets slow, and with a thousand it may not render at all. Every item renders every field as Blade, and fields such as a `Select` repeat their whole option list in every row. The browser then has to parse megabytes of HTML and start thousands of Alpine components.
 
 Warp Repeater keeps your existing `Repeater` definition. Add `->warp()` and the rows are drawn on a canvas. The header, the "Add" button, validation, actions and saving are still Filament's own. The row under the pointer and the row you are working in become real Filament fields, so typing, selecting, date pickers, dropdowns and the item actions are exactly the native ones.
@@ -17,7 +21,7 @@ Repeater::make('items')
 
 ## Why
 
-Measured on a demo invoice form whose line items have five fields, one of them a `Select` with 200 options (Chrome, Filament 5):
+Measured on the demo's invoice form, whose line items have five fields, one of them a `Select` with 200 options (Chrome, Filament 5):
 
 | | Native repeater | Warp Repeater |
 | --- | --- | --- |
