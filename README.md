@@ -59,6 +59,10 @@ The same items without the pointer, all drawn on the canvas:
 
 ![Multi-level rows](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/multi-level-rows.png)
 
+A sticky header that stays below the panel's topbar, 64 lines down:
+
+![Sticky header](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/sticky-header.png)
+
 600 lines down an invoice with 1,000 lines:
 
 ![1,000 lines](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/thousand-lines.png)
