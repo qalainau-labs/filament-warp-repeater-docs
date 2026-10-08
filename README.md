@@ -307,7 +307,7 @@ Repeater::make('lines')
 
 Tab and Shift+Tab still move between fields, and the arrow keys inside dropdowns, date pickers and select search fields keep working as usual.
 
-**Pasting.** Copy cells in Excel, Numbers or Google Sheets and paste them into any field of the repeater. The values fill the fields to the right and below, and lines are added at the end when there are not enough of them, up to `maxItems()`. To paste one value into many cells, select a range and paste. Each value is turned into the field's state:
+**Pasting.** Copy cells in Excel, Numbers or Google Sheets and paste them into any field of the repeater. The values fill the fields to the right and below, and lines are added at the end when there are not enough of them, up to `maxItems()` and at most 1,000 lines per paste. To paste one value into many cells, select a range and paste. Each value is turned into the field's state:
 
 - Selects accept the option's key or its label (any case). Multiple selects take a comma-separated list. Values that are not an option are skipped.
 - Toggles and checkboxes are on for `TRUE`, `1`, `yes`, `y`, `on`, `x` or `✓`, and off for anything else.
@@ -317,7 +317,7 @@ Tab and Shift+Tab still move between fields, and the arrow keys inside dropdowns
 
 Copying a range works the other way: selects are copied as their labels and toggles as `TRUE` / `FALSE`, so the cells paste back as they were.
 
-Pasting and filling down run on the server, as a single Filament action on the repeater. New lines are added the same way as with the "Add" button, so default values apply, and every changed field runs its `afterStateUpdated()` hooks, so `live()` totals are recalculated. Nothing is saved until the form is saved.
+Pasting and filling down run on the server, as a single Filament action on the repeater. The action is only available while `warpSpreadsheet()` is on and the repeater is not disabled, and it only writes to fields the user could type into. New lines are added the same way as with the "Add" button, so default values apply, and every changed field runs its `afterStateUpdated()` hooks, so `live()` totals are recalculated. Nothing is saved until the form is saved.
 
 Notes:
 
