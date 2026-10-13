@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- While the lines are sorted or filtered, the reorder handles and the move buttons of the lines drawn on the canvas now look
+  disabled too, like the ones of the line under the pointer.
+
 ## [1.0.0] - 2026-10-13
 
 ### Added

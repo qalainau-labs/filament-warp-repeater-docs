@@ -390,6 +390,12 @@ Repeater::make('lines')
     ->warpFilters(['product_id', 'tags']); // or only these fields
 ```
 
+![Sorting and filters](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/sorting-and-filters.png)
+
+300 lines filtered to the 22 that contain "stapler", sorted by unit price. The line numbers keep the saved position, and drag and drop is off until "Show all lines in order":
+
+![Sorted and filtered lines](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/sorted-and-filtered.png)
+
 - Each sortable or filterable header gets one button, with the same chevron as Filament's sortable table columns, so the column widths hardly change. For a column you can only sort, the button switches between ascending, descending and the saved order. For a column you can filter, it opens a panel with "Sort ascending", "Sort descending" and the values of the column.
 - The panel lists the values as they are shown: option labels for selects (each tag of a multiple select), the displayed date for JavaScript date pickers, and On / Off for toggles and checkboxes. Uncheck values to hide their lines, type to find a value, or press Enter to show the lines that contain the text. A line with several values (a multiple select) is shown as long as one of them is checked.
 - Numbers sort by value, dates by date, and everything else by the shown text, in the page's language. Empty cells go last in both directions.
@@ -468,6 +474,10 @@ Repeater::make('lines')
 - `warpStickyHeader()` keeps working: the header row follows the page while staying aligned with the scrolled columns. `warpHeight()` can be combined too.
 - With multi-level rows, `n` counts the columns of the grid (`warpMultiLevel(columns: ...)`), and the fields and header cells in those columns are frozen on every line. A field or header cell that spans across the edge cannot be cut in two, so the frozen part is widened to include it: with `Product` in `warpCell(col: 1, colSpan: 2)`, `warpFrozenColumns(1)` freezes the first two grid columns.
 - In narrow containers, where Filament stacks each item as a card, there is nothing to scroll and both settings are ignored.
+
+Multi-level rows with `warpTableWidth(1600)->warpFrozenColumns(2)`, scrolled sideways: the product, delivery and gift cells stay in view on both lines.
+
+![Frozen columns with multi-level rows](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/frozen-multi-level.png)
 
 ## Supported fields
 
