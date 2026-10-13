@@ -51,6 +51,7 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 - **Spreadsheet editing**: `->warpSpreadsheet()` adds Enter and arrow keys to move between lines, pasting tables from Excel or Google Sheets (adding lines as needed), range selection, copy, and fill down with Ctrl/Cmd+D.
 - **Unsaved changes**: `->warpChangeMarks()` marks the cells and lines changed since the last save, and counts changed, new and removed lines.
 - **Search**: `->warpSearch()` adds a search field that finds text in every line, including the ones drawn on the canvas, which the browser's own find cannot see.
+- **Sorting and filters**: `->warpSorting()` and `->warpFilters()` add a button to each column header to sort the lines and filter them by value, like a spreadsheet. Only what you see changes: the saved order and the hidden lines stay as they are.
 - **Line numbers**: `->warpRowNumbers()` numbers the lines in a first column, so "line 214" in a validation message or a phone call is easy to find.
 - **Fixed height**: `->warpHeight(480)` scrolls the lines inside the repeater, so the header, the summary row and the fields after the repeater stay in place.
 - **Wide tables with frozen columns**: `->warpTableWidth(1800)->warpFrozenColumns(1)` scrolls tables with many columns horizontally while the first columns stay in view.
@@ -376,6 +377,29 @@ Repeater::make('lines')
 
 With `warpStickyHeader()`, the search field and the other tools above the repeater stay on screen together with the header row.
 
+## Sorting and filters
+
+`warpSorting()` sorts the lines from the column headers, and `warpFilters()` filters them by value, like the filter buttons of a spreadsheet. Both change only what you see: the order in which the items are saved (`orderColumn()`) does not change, and hidden lines keep their values and are saved with the form.
+
+```php
+Repeater::make('lines')
+    ->table([...])
+    ->schema([...])
+    ->warp()
+    ->warpSorting()                        // every column
+    ->warpFilters(['product_id', 'tags']); // or only these fields
+```
+
+- Each sortable or filterable header gets one button, with the same chevron as Filament's sortable table columns, so the column widths hardly change. For a column you can only sort, the button switches between ascending, descending and the saved order. For a column you can filter, it opens a panel with "Sort ascending", "Sort descending" and the values of the column.
+- The panel lists the values as they are shown: option labels for selects (each tag of a multiple select), the displayed date for JavaScript date pickers, and On / Off for toggles and checkboxes. Uncheck values to hide their lines, type to find a value, or press Enter to show the lines that contain the text. A line with several values (a multiple select) is shown as long as one of them is checked.
+- Numbers sort by value, dates by date, and everything else by the shown text, in the page's language. Empty cells go last in both directions.
+- The order and the filter are decided when you choose them, like in a spreadsheet: lines do not move or disappear while you type. Lines you add, clone or paste are shown, and so are lines with validation errors, even when they do not match the filter.
+- Above the repeater, "10 of 120 lines" and the sorted column are shown, with "Show all lines in order" to go back.
+- While the lines are sorted or filtered, reordering by drag and drop and the move up and down buttons are off, because the order on screen is not the saved order. Pasting a table and filling down with `warpSpreadsheet()` fill the shown lines, in the order they are shown.
+- Line numbers (`warpRowNumbers()`) keep the saved position, the column summaries (`warpSummary()`) still total every line, and the search (`warpSearch()`) looks at the shown lines.
+- Password fields are never sorted or filtered. In narrow containers, where Filament stacks each item as a card, the headers are hidden; an order or filter chosen before stays, and "Show all lines in order" is still above the repeater.
+- Both options accept a closure. The native repeater has no equivalent.
+
 ## Line numbers
 
 `warpRowNumbers()` adds a column with the number of each line, before the reorder handle:
@@ -440,9 +464,10 @@ Repeater::make('lines')
 
 - The header row, the lines and the summary row scroll together. The column widths are computed from the content for the given width, as usual.
 - `warpFrozenColumns(n)` freezes the first `n` columns of `table()`. The line numbers (`warpRowNumbers()`) and the reorder handle are always frozen with them. A thin shadow marks the edge while the table is scrolled.
-- Tab and Shift+Tab move through all the fields, and the browser scrolls the table to the focused one.
+- Tab and Shift+Tab move through all the fields, and the table scrolls sideways so the focused field is in view, never hidden under the frozen columns. Dropdowns and date pickers opened in a frozen column stay on top of the lines below.
 - `warpStickyHeader()` keeps working: the header row follows the page while staying aligned with the scrolled columns. `warpHeight()` can be combined too.
-- In narrow containers, where Filament stacks each item as a card, there is nothing to scroll and both settings are ignored. They are also ignored for multi-level rows.
+- With multi-level rows, `n` counts the columns of the grid (`warpMultiLevel(columns: ...)`), and the fields and header cells in those columns are frozen on every line. A field or header cell that spans across the edge cannot be cut in two, so the frozen part is widened to include it: with `Product` in `warpCell(col: 1, colSpan: 2)`, `warpFrozenColumns(1)` freezes the first two grid columns.
+- In narrow containers, where Filament stacks each item as a card, there is nothing to scroll and both settings are ignored.
 
 ## Supported fields
 
