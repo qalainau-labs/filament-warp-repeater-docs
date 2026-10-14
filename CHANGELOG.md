@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-14
+
+### Fixed
+
+- The shadow at the edge of frozen columns (`->warpFrozenColumns()`) is visible in dark mode.
+- On a slow first visit, when Filament's font finished loading after the lines were first drawn, the canvas kept the
+  fallback font's layout and text could run under the select chevrons. The lines are measured again once the font
+  has loaded.
+- Images in cells redraw when they fail to load.
+
 ## [1.0.1] - 2026-10-13
 
 ### Fixed
