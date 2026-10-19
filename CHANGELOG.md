@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-10-20
+
+### Fixed
+
+- Fast scrolling no longer shows an empty band at the top or bottom edge of the lines for a moment. The canvas is now
+  drawn 400px beyond the visible area above and below, so the lines are already there when the browser scrolls ahead
+  of the next redraw.
+- The counts above the table (`->warpChangeMarks()`) are rebuilt only when they change. A click on "1 new line" or
+  "2 changed lines" was lost when a Livewire response arrived while the mouse button was down.
+
 ## [1.0.2] - 2026-10-14
 
 ### Fixed
