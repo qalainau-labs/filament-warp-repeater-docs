@@ -313,7 +313,7 @@ Tab and Shift+Tab still move between fields, and the arrow keys inside dropdowns
 - Selects accept the option's key or its label (any case). Multiple selects take a comma-separated list. Values that are not an option are skipped.
 - Toggles and checkboxes are on for `TRUE`, `1`, `yes`, `y`, `on`, `x` or `✓`, and off for anything else.
 - Numeric text inputs drop thousands separators, currency symbols and units: `$1,250.50` becomes `1250.50`.
-- Date pickers read any date that PHP can parse, and store it in the field's format.
+- Date pickers read any date that PHP can parse, as a time in the field's timezone (the time the user sees, also with `timezone()` or `FilamentTimezone::set()`), and store it the same way the date picker does.
 - Disabled, read-only and hidden fields are skipped.
 
 Copying a range works the other way: selects are copied as their labels and toggles as `TRUE` / `FALSE`, so the cells paste back as they were.
@@ -343,17 +343,23 @@ Repeater::make('lines')
 - A changed cell gets a small triangle in its top-left corner, and its line a bar on the left edge (warning color).
 - A new line, added with "Add", cloned or pasted, gets a bar in the success color.
 - Above the repeater: "3 changed lines", "1 new line", "2 removed lines". Click "changed" or "new" to jump to those lines one after another.
-- Changing a value back to what it was removes the mark. Values are compared as the form would save them, so `23` and `"23"`, or an empty string and `null`, are the same.
+- Changing a value back to what it was removes the mark. Values are compared as the form would save them, so `23` and `"23"`, an empty string and `null`, a toggle's `1` and `true`, or the selected options `[1, 2]` and `["1", "2"]` are the same.
 
-The marks compare each line with its values when the repeater was first shown, and follow every change as you type, before anything is sent to the server. When the form is saved, the current values become the new reference. A save is any Livewire call to one of the `resetOn` methods that ends without validation errors: by default `save` (edit pages) and `create` (create pages). Pass your own method names if your form saves differently:
+The marks compare each line with its values when the repeater was first shown, and follow every change as you type, before anything is sent to the server. When the form is saved, the saved values become the new reference. A save is a Livewire call to one of the `resetOn` methods: by default `save` (edit pages) and `create` (create pages). Pass your own method names if your form saves differently:
 
 ```php
 ->warpChangeMarks(resetOn: ['save', 'saveDraft'])
 ```
 
-If saving fails with validation errors, the marks stay.
+When does a call count as a save?
 
-The reference values live in the browser. Reloading the page starts again from the saved values, the same as the form itself.
+- On the create and edit pages of a Filament resource, `save` and `create` count only when the record was actually saved. Filament reports that with its `RecordSaved` event. If saving fails with validation errors, or a hook such as `beforeSave()` stops it with `$this->halt()`, the marks stay.
+- Your own `resetOn` methods, and forms outside resource pages, count when the call ends without validation errors.
+- Values you type while the save request is on its way are not part of that save, so they keep their marks.
+
+When the form is filled again, for example by a header action that reloads the record with `fillForm()` or `refreshFormData()`, the new values become the reference. Filament gives the items new keys on every fill, so without this every line would show as removed and added again.
+
+The reference values live in the browser. Reloading the page starts again from the saved values, the same as the form itself. They are kept when the repeater is briefly empty and shows the native "Add" button, so deleting the last line and adding a new one shows one removed and one new line.
 
 ## Search
 
@@ -399,7 +405,7 @@ Repeater::make('lines')
 - Each sortable or filterable header gets one button, with the same chevron as Filament's sortable table columns, so the column widths hardly change. For a column you can only sort, the button switches between ascending, descending and the saved order. For a column you can filter, it opens a panel with "Sort ascending", "Sort descending" and the values of the column.
 - The panel lists the values as they are shown: option labels for selects (each tag of a multiple select), the displayed date for JavaScript date pickers, and On / Off for toggles and checkboxes. Uncheck values to hide their lines, type to find a value, or press Enter to show the lines that contain the text. A line with several values (a multiple select) is shown as long as one of them is checked.
 - Numbers sort by value, dates by date, and everything else by the shown text, in the page's language. Empty cells go last in both directions.
-- The order and the filter are decided when you choose them, like in a spreadsheet: lines do not move or disappear while you type. Lines you add, clone or paste are shown, and so are lines with validation errors, even when they do not match the filter.
+- The order and the filter are decided when you choose them, like in a spreadsheet: lines do not move or disappear while you type. Lines you add, clone or paste are shown, and so are lines with validation errors, even when they do not match the filter. When the form is filled again (a header action that reloads the record), the order and the filter are applied again to the new values. An open filter panel lists the values as of the last update.
 - Above the repeater, "10 of 120 lines" and the sorted column are shown, with "Show all lines in order" to go back.
 - While the lines are sorted or filtered, reordering by drag and drop and the move up and down buttons are off, because the order on screen is not the saved order. Pasting a table and filling down with `warpSpreadsheet()` fill the shown lines, in the order they are shown.
 - Line numbers (`warpRowNumbers()`) keep the saved position, the column summaries (`warpSummary()`) still total every line, and the search (`warpSearch()`) looks at the shown lines.
@@ -500,6 +506,7 @@ Warp Repeater only replaces the rows. In these states the regular Filament repea
 
 - Repeaters without a `table()` layout (the default card layout and `simple()`).
 - An empty repeater. Only the "Add" button is shown, like the native repeater.
+- Repeaters whose item keys are plain numbers, for example after `generateUuidUsing(false)`. Warp Repeater shares the HTML of cells between lines by replacing the item key, and a number such as `1` also appears elsewhere in that HTML. The default UUID keys and the `record-{id}` keys of `relationship()` repeaters are fine.
 
 ## Limitations
 

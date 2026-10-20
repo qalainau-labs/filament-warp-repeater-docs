@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-10-20
+
+### Fixed
+
+- Pasting a date and time into a date picker with its own timezone (`timezone()` or `FilamentTimezone::set()`) no
+  longer moves it by the time difference. The pasted text is read as the time shown in the field. Filling dates down
+  with Ctrl/Cmd+D keeps them as they are, instead of moving them again on every fill.
+- `->warpChangeMarks()` on Filament resource pages clears the marks only when the record was saved. A save stopped by
+  `$this->halt()` in a hook such as `beforeSave()` used to clear them too.
+- Values typed while the save request was on its way keep their marks. They were taken as saved.
+- When the form is filled again, for example by a header action that reloads the record, the change marks start from
+  the new values, and a sorted or filtered view is applied again. Every line used to show as removed and added again,
+  and the lines kept the old order under a "sorted" label.
+- Deleting the last line and adding a new one keeps the change marks (one removed line, one new line), also after
+  more than two seconds without lines.
+- After a repeater went through zero lines, the sort and filter buttons in the column headers work again, the search
+  field shows the text that is still highlighted, and an open filter panel is closed instead of staying invisible.
+- Saving again with the same validation errors scrolls to the first line with an error again. Before, nothing moved,
+  and the scroll happened later, after an unrelated update.
+- The error marks next to the table name the line by its line number, also while the lines are sorted or filtered,
+  and the "2 of 5" position starts again when the lines with errors change.
+- A selected range of cells stays on the same lines when lines are added or reordered elsewhere, and is cleared when
+  one of its lines is removed. It used to point at whatever line had moved into its place.
+- A drag of a line is stopped when the lines change under it, instead of moving another line.
+- An open filter panel lists the current values after an update.
+- Change marks treat a toggle's `1` and `true`, and the options `[1, 2]` and `["1", "2"]` of a multiple select, as
+  the same value.
+- Text typed into an `live(onBlur: true)` field is kept when an update rebuilds that field before it loses focus,
+  unless the server changed its value.
+- The labels of searchable selects wrap at the right place after the page's web font loads late.
+- Repeaters whose item keys are plain numbers (`generateUuidUsing(false)`) fall back to the native table. Their cells
+  were broken, because the number also appears elsewhere in the HTML of a cell.
+
 ## [1.0.5] - 2026-10-20
 
 ### Changed
