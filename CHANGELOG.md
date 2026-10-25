@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.8] - 2026-10-25
+
+### Fixed
+
+- With Warp Table in the same app, a Warp Repeater showed only its first row. Both plugins' CSS used the same class
+  names (`.fi-warp-stage`, `.fi-warp-canvas` and others) and is loaded on every page. Warp Repeater's classes and CSS
+  variables now start with `fi-warp-rep` (`.fi-warp-rep-stage`, `--fi-warp-rep-height`), so they no longer reach other
+  plugins. If your own CSS targets a Warp Repeater class, add `rep-` after `fi-warp-` (`.fi-warp-repeater` becomes
+  `.fi-warp-rep`).
+
 ## [1.0.7] - 2026-10-25
 
 ### Added
