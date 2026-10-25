@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-10-25
+
+### Added
+
+- README: a "Multi-tenancy" section. Warp Repeater works with Filament's tenancy (`Panel::tenant()`) as it is:
+  select options and pasted values only match the records of the current tenant. Tests with a real tenant panel.
+
+### Fixed
+
+- No more "Error fetching option label" in the browser console when a line gets a value that is not one of the
+  options of its select (for example an id copied down with Ctrl/Cmd+D). The editable line that was rebuilt is now
+  cleaned up right away, so its old select no longer tries to fetch a label after it left the page.
+
 ## [1.0.6] - 2026-10-20
 
 ### Fixed

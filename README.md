@@ -500,6 +500,22 @@ Every field works, because the fields you interact with are always Filament's ow
 
 Values changed in the browser and not yet sent to the server are drawn from Livewire's state. The labels of searchable selects and the display format of JavaScript date pickers are computed in the browser until the next request.
 
+## Multi-tenancy
+
+Warp Repeater works in panels with [multi-tenancy](https://filamentphp.com/docs/5.x/users/tenancy) (`->tenant(Team::class)`) without any setup. It does not query the database itself. It uses the same Filament calls as the standard repeater, so the tenant scoping of your panel applies as usual:
+
+- **Select options** in the lines, and the labels of the selected options, come from Filament (`getOptions()`, `getOptionLabel()`, `getSearchResults()`). With `relationship()`, only the records of the current tenant are offered.
+- **Pasting** a label or a key into a select (`warpSpreadsheet()`) looks the option up the same way, with the search of a searchable `relationship()` select. A label or key of another tenant is not an option, so it is skipped and the old value stays.
+- **Filling down** (Ctrl/Cmd+D) copies the state as it is. When the form is saved, Filament's validation checks every select value against its options, so a value of another tenant is rejected with a validation error.
+- **Lines of a `relationship()` repeater** are loaded and saved by Filament, from the record of the page.
+
+Things to check in your own code:
+
+- Filament scopes a model to the tenant only when the panel has a resource for it. If the options come from a model without a resource, or from your own `options()`, `getSearchResultsUsing()` or `modifyQueryUsing()` query, filter that query by `Filament::getTenant()` yourself.
+- The same goes for `exists` and `unique` rules on fields: use Filament's `scopedExists()` and `scopedUnique()`.
+
+Panels without tenancy work as before.
+
 ## Automatic fallback
 
 Warp Repeater only replaces the rows. In these states the regular Filament repeater is rendered instead:
