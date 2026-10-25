@@ -4,9 +4,9 @@
 
 **Fast Filament table repeaters for long forms: the rows of a `Repeater::table()` are drawn on a `<canvas>`, with a sticky header and ledger-style multi-level rows that the native repeater does not have, while every field still behaves exactly like Filament's own.**
 
-<a href="https://filament-warp-repeater.webllsystem.com/"><img src="https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/live-demo.png" alt="Try the live demo: filament-warp-repeater.webllsystem.com" width="592"></a>
+<a href="https://demo.warpui.com/repeater"><img src="https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/live-demo.png" alt="Try the live demo: demo.warpui.com/repeater" width="592"></a>
 
-Edit line items, open the searchable selects and date pickers, reorder lines and compare with the native repeater side by side at **[filament-warp-repeater.webllsystem.com](https://filament-warp-repeater.webllsystem.com/)**. No sign-up needed; the data is reset every hour.
+Edit line items, open the searchable selects and date pickers, reorder lines and compare with the native repeater side by side at **[demo.warpui.com/repeater](https://demo.warpui.com/repeater)**. No sign-up needed; the data is reset every hour.
 
 A table repeater with a few hundred items gets slow, and with a thousand it may not render at all. Every item renders every field as Blade, and fields such as a `Select` repeat their whole option list in every row. The browser then has to parse megabytes of HTML and start thousands of Alpine components.
 
