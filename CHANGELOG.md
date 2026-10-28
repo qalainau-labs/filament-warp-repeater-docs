@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.11] - 2026-10-28
+
+### Fixed
+
+- An empty date input in Japanese (and Chinese) on a row drawn on the canvas showed `年/月/日` starting 4px too far
+  left. As in the browser's date input, the year field is wider than `年` and the text is centred in it (`年 /月/日`).
+
 ## [1.0.10] - 2026-10-28
 
 ### Fixed
