@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-10-28
+
+### Fixed
+
+- A `Textarea` drawn in the grid wrapped its text earlier than the browser. Japanese, Chinese and Korean text now
+  breaks between any two characters, as in the browser's own textarea, so a part after a space (including the
+  ideographic space `　`) fills the room left on the line before. Runs of Latin letters and digits stay whole, and
+  brackets and punctuation follow the browser's line-break rules. Text is also measured with the same kerning as the
+  page (Japanese fonts were measured about 1.4% wider).
+- A word wider than the textarea that started in the middle of a line was drawn past the right edge. It is now split
+  across lines, as the browser does (`overflow-wrap: break-word`).
+
 ## [1.0.8] - 2026-10-25
 
 ### Fixed
