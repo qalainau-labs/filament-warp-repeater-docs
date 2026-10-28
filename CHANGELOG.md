@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.12] - 2026-10-28
+
+### Fixed
+
+- Adding the first item to an empty repeater (which is drawn as Filament's own repeater) failed with
+  `warpRepeater is not defined` in the browser console, and the new item could not be shown. Livewire turned the
+  element of the empty repeater into Warp Repeater's element in place, so Alpine evaluated `x-data` before the
+  component was loaded. Warp Repeater's element now has a `wire:key` of its own, so Livewire inserts it as a new
+  element and Filament's `x-load` waits for the component, as for any other lazily loaded field. If you registered
+  `warpRepeater` yourself as a workaround, you can remove it.
+
 ## [1.0.11] - 2026-10-28
 
 ### Fixed
