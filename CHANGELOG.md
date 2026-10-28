@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.10] - 2026-10-28
+
+### Fixed
+
+- A date input (`TextInput::make()->type('date')`) in a row drawn on the canvas was an empty box when it had no
+  value, and showed its value as plain text (`2026-09-15`) without the calendar icon, while the row under the pointer
+  showed the browser's date input. Rows on the canvas now look like the browser's date input: the date in the browser's
+  format (`09/15/2026`, `2026/09/15` in Japanese), the field markers when it is empty (`mm/dd/yyyy`, `年/月/日`), the
+  calendar icon on the right, and the text cut before the icon in narrow columns. `time` (with the clock icon),
+  `datetime-local`, `month` and `week` inputs are drawn the same way.
+- In a searchable select (`Select::searchable()` and other selects drawn by Filament's JavaScript), a selected name
+  that started with an ideographic space (`　`) lost that line on the canvas and was drawn one line too high. Text
+  drawn on the canvas now treats ideographic and no-break spaces as the browser does: they are kept, and only runs of
+  normal spaces, tabs and line breaks are collapsed to one space.
+
 ## [1.0.9] - 2026-10-28
 
 ### Fixed
