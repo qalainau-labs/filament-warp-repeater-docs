@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-31
+
+### Added
+
+- German, French, Spanish, Italian, Brazilian Portuguese, Korean and Chinese (simplified and traditional)
+  translations, next to English and Japanese.
+
 ## [1.0.13] - 2026-10-30
 
 ### Added

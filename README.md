@@ -189,7 +189,7 @@ Repeater::make('lines')
 
 ![Error navigation](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/validation-errors.png)
 
-The labels come from the package's translations (English and Japanese). To change them, publish the translations with `php artisan vendor:publish --tag=filament-warp-repeater-translations`.
+The labels come from the package's translations (English, Japanese, German, French, Spanish, Italian, Brazilian Portuguese, Korean and Chinese, simplified and traditional). To change them, publish the translations with `php artisan vendor:publish --tag=filament-warp-repeater-translations`.
 
 ## Multi-level rows
 
