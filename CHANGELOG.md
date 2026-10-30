@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.13] - 2026-10-30
+
+### Added
+
+- Pasting into a searchable `relationship()` select also accepts the exact value of one of its search columns: with
+  `->searchable(['name', 'sku'])`, a column of SKUs copied from a spreadsheet picks the products. The value must belong
+  to exactly one record among the select's own search results.
+
+### Fixed
+
+- Pasting many lines was slow: 400 lines into a field with an `afterStateUpdated()` hook took 16 seconds, because every
+  pasted cell also ran the repeater's hooks, which read the state of every line again. The repeater's hooks now run once
+  per paste (the fields' own hooks still run for every cell): 2.5 seconds for the same paste. Missing lines are added
+  all at once.
+- A relationship select stopped looking values up after 100 different values in one paste; it now looks up as many
+  as the paste has lines (1,000 at most).
+- Pasting text that is not an option into a multiple select cleared its options; the old options now stay. An empty
+  cell still clears them.
+
 ## [1.0.12] - 2026-10-28
 
 ### Fixed

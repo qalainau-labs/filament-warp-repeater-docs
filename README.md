@@ -310,11 +310,13 @@ Tab and Shift+Tab still move between fields, and the arrow keys inside dropdowns
 
 **Pasting.** Copy cells in Excel, Numbers or Google Sheets and paste them into any field of the repeater. The values fill the fields to the right and below, and lines are added at the end when there are not enough of them, up to `maxItems()` and at most 1,000 lines per paste. To paste one value into many cells, select a range and paste. Each value is turned into the field's state:
 
-- Selects accept the option's key or its label (any case). Multiple selects take a comma-separated list. Values that are not an option are skipped.
+- Selects accept the option's key or its label (any case). Multiple selects take a comma-separated list. Values that are not an option are skipped, and the old value stays.
+- A searchable `relationship()` select also accepts the exact value of one of its search columns, so with `->searchable(['name', 'sku'])` a column of SKUs copied from a spreadsheet picks the products. The value must belong to exactly one record among the select's search results (the same query, tenant and `modifyQueryUsing()` as the select). Columns of other relationships (`customer.name`) and JSON columns are not compared.
 - Toggles and checkboxes are on for `TRUE`, `1`, `yes`, `y`, `on`, `x` or `✓`, and off for anything else.
 - Numeric text inputs drop thousands separators, currency symbols and units: `$1,250.50` becomes `1250.50`.
 - Date pickers read any date that PHP can parse, as a time in the field's timezone (the time the user sees, also with `timezone()` or `FilamentTimezone::set()`), and store it the same way the date picker does.
 - Disabled, read-only and hidden fields are skipped.
+- `afterStateUpdated()` runs for every pasted field, so a field that looks up a price or fills other fields works as when it is typed. The repeater's own `afterStateUpdated()` (and its parents') runs once per paste. Pasting 400 lines into a field whose hook runs two queries takes about 2.5 seconds on the server.
 
 Copying a range works the other way: selects are copied as their labels and toggles as `TRUE` / `FALSE`, so the cells paste back as they were.
 
