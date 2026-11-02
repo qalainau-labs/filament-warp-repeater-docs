@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-02
+
+### Fixed
+
+- Simplified Chinese: the "Sorted by" message is now a full sentence.
+
 ## [1.1.0] - 2026-10-31
 
 ### Added
