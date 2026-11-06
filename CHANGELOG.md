@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-06
+
+### Added
+
+- Instructions for AI coding assistants (Claude Code, Cursor, Codex) through [Laravel Boost](https://laravel.com/docs/boost):
+  a guideline that Boost adds to `CLAUDE.md` and `AGENTS.md`, and the `warp-repeater-development` skill for building
+  warp repeaters and testing them. Select `qalainau/filament-warp-repeater` in `php artisan boost:install`, or add it to
+  `"packages"` in `boost.json`. See [AI coding assistants (Laravel Boost)](README.md#ai-coding-assistants-laravel-boost).
+
+### Documentation
+
+- README: "Testing with tenancy" shows how to test the lines in a panel with tenancy with Filament's form assertions
+  (`assertFormSet()`, and `assertHasFormErrors()` for a product of another team). Warp Repeater itself has nothing
+  tenant-specific to test.
+
 ## [1.1.1] - 2026-11-02
 
 ### Fixed

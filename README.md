@@ -108,6 +108,30 @@ The service provider is auto-discovered. There is nothing else to register.
 
 > Run `php artisan filament:assets` again after every update of the package. The asset URLs contain a hash of the file contents, so browsers pick up the new build immediately.
 
+### AI coding assistants (Laravel Boost)
+
+Warp Repeater ships instructions for AI coding assistants such as Claude Code, Cursor and Codex. If your app uses
+[Laravel Boost](https://laravel.com/docs/boost), the assistant learns how to use Warp Repeater from them: which options are built in (totals, pasting from Excel, search), what is easy to get wrong, and how to test a form with a warp repeater.
+
+- **Guidelines** (`resources/boost/guidelines/core.md`): a short summary that Boost adds to `CLAUDE.md`,
+  `AGENTS.md` and the other agent files. It also points the assistant to this README in `vendor/`, so it reads the
+  documentation of the version you have installed instead of guessing.
+- **Skill** `warp-repeater-development` (`resources/boost/skills/`): the steps for adding a warp repeater, the built-in options to use instead of custom code, and feature and browser tests. The assistant loads it when it works on a repeater.
+
+Boost does not add guidelines of other vendors' packages on its own. When `php artisan boost:install` asks
+"Which third-party AI guidelines/skills would you like to install?", select `qalainau/filament-warp-repeater`. To do
+it without the question, add the package to `boost.json` and run the command again:
+
+```json
+{
+    "packages": ["qalainau/filament-warp-repeater"]
+}
+```
+
+```bash
+php artisan boost:install --guidelines --skills -n
+```
+
 ## Usage
 
 Call `->warp()` on any repeater with a `table()` layout:
@@ -517,6 +541,32 @@ Things to check in your own code:
 - The same goes for `exists` and `unique` rules on fields: use Filament's `scopedExists()` and `scopedUnique()`.
 
 Panels without tenancy work as before.
+
+### Testing with tenancy
+
+Warp Repeater has nothing tenant-specific to test. The lines are the form's state, so test them with Filament's form assertions, after setting the tenant like the panel does on each request:
+
+```php
+use Filament\Facades\Filament;
+use Livewire\Livewire;
+
+Filament::setCurrentPanel('app');
+Filament::setTenant($teamA);
+Filament::bootCurrentPanel();
+
+$component = Livewire::test(EditOrder::class, ['record' => $order->getRouteKey()]);
+$item = array_key_first($component->get('data.lines'));
+
+$component->assertFormSet(["lines.{$item}.product_id" => $bolt->getKey()]);
+
+// a product of another team is not an option of the select, so saving it fails validation
+$component
+    ->set("data.lines.{$item}.product_id", $otherTeamsProduct->getKey())
+    ->call('save')
+    ->assertHasFormErrors(["lines.{$item}.product_id"]);
+```
+
+The keys of the lines are the repeater's item keys (`record-{id}` for a `relationship()` repeater, UUIDs otherwise), so read them from the state as above instead of using `0`, `1`, ….
 
 ## Automatic fallback
 
