@@ -56,6 +56,7 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 - **Fixed height**: `->warpHeight(480)` scrolls the lines inside the repeater, so the header, the summary row and the fields after the repeater stay in place.
 - **Wide tables with frozen columns**: `->warpTableWidth(1800)->warpFrozenColumns(1)` scrolls tables with many columns horizontally while the first columns stay in view.
 - **Theme aware**: colors, fonts, spacing and icons come from Filament's CSS, so custom themes and dark mode work without configuration.
+- **Browser tests**: a small JavaScript API finds a field on the canvas to click (`cellPoint()`), reads the lines as shown (`rows()`) and waits until requests and drawing are done (`whenIdle()`), for Playwright and other browser tests.
 - **Automatic fallback**: layouts other than `table()` and empty repeaters render the regular Filament repeater with no change on your side.
 
 ## Screenshots
@@ -567,6 +568,42 @@ $component
 ```
 
 The keys of the lines are the repeater's item keys (`record-{id}` for a `relationship()` repeater, UUIDs otherwise), so read them from the state as above instead of using `0`, `1`, ….
+
+## Browser tests (JavaScript)
+
+The lines are drawn on a canvas, so most of them have no elements in the page: a Playwright (or Cypress) test cannot find the field to click with a locator, and cannot read the values. The repeater gives tests a small JavaScript API for this on its Alpine component. It does not change between releases.
+
+```js
+const repeater = (method, argument) =>
+    page.evaluate(([name, arg]) => Alpine.$data(document.querySelector('.fi-warp-rep'))[name](arg), [method, argument])
+
+// the lines as shown, with the text of each field
+const lines = await repeater('rows')
+// [{ key: 'record-12', line: 1, values: { product_id: 'Desk lamp', quantity: '3', gift_wrap: 'FALSE', ... } }, ...]
+
+// where the quantity field of the 16th line is (the page scrolls to it first)
+const cell = await repeater('cellPoint', { row: 15, column: 'quantity' })
+// { row: 15, key: 'record-27', column: 'quantity', x: 702, y: 488, left: 652, top: 465, width: 100, height: 46, visible: true }
+
+await page.mouse.click(cell.x, cell.y) // the line becomes the real fields and the click lands in the quantity input
+await page.keyboard.press('ControlOrMeta+A')
+await page.keyboard.type('7')
+await page.keyboard.press('Tab') // a live(onBlur: true) field sends the value now
+
+// wait until the request has finished and the lines are drawn again
+await repeater('whenIdle')
+expect((await repeater('rows'))[15].values.amount).toBe('942.83')
+
+await page.getByRole('button', { name: 'Save changes' }).click()
+await repeater('whenIdle')
+// now check the database
+```
+
+- **`cellPoint({ row, column })`** returns a promise with the position of a field on the screen. `row` is the position of the line as shown (a number, 0 is the first line; after sorting or filtering, the sorted and filtered order) or the item key (a string: `record-{id}` for a `relationship()` repeater, a UUID otherwise). `column` is the field name inside the item, as in the schema (`'quantity'`, or `'price.amount'` for a nested field). If the field is out of view, the page scrolls to it first (and the repeater itself with `warpHeight()`, and sideways with `warpTableWidth()`), so a click at `x`, `y` lands on it. `x` and `y` are the center and `left`, `top`, `width`, `height` the box, in the same viewport pixels as `getBoundingClientRect()`. Pass `scroll: false` to measure without scrolling; `visible` then tells you whether the center can be clicked (not under the sticky header, a frozen column or the edge of the screen). It returns `null` for a line that does not exist or is filtered out, and for a column that does not exist or has no state (for example a `TextEntry`). With multi-level rows it finds the field on whichever level it is.
+- **`rows()`** returns the lines as shown, in the shown order, each with `key` (the item key), `line` (the line number in the saved order, as `warpRowNumbers()` shows it) and `values`: the text of each field by field name, the same text that copying the cell with Ctrl/Cmd+C gives. That is the option label for selects (labels joined with `, ` for multiple selects), `TRUE` or `FALSE` for toggles and checkboxes, the stored value for dates, and an empty string for an empty field. The values come from Livewire's state, so values typed but not yet sent are included.
+- **`whenIdle()`** returns a promise that resolves when no Livewire request of the form is running (adding, deleting or moving lines, `live()` fields, a paste, saving), the fields that Alpine renders have been prepared, a search has started and the lines have been drawn again. It rejects after 10 seconds (`whenIdle({ timeout: 30000 })` to wait longer).
+- After a hover or a click the line is made of the real Filament fields, in `.fi-warp-rep-live-row[data-key="..."]`, so you can also use ordinary locators inside it, for example for the delete button of that line.
+- Livewire may replace the `.fi-warp-rep` element on an update, so look it up again each time, as above. With several repeaters on one page, pick one with `document.querySelectorAll('.fi-warp-rep')[n]`.
 
 ## Automatic fallback
 

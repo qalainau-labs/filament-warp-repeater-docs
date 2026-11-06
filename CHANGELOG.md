@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-06
+
+### Added
+
+- A JavaScript API for browser tests: `cellPoint({ row, column })`, `rows()` and `whenIdle()` on the repeater's Alpine
+  component find a field drawn on the canvas, read the lines as shown and wait until requests and drawing are done. See
+  [Browser tests (JavaScript)](README.md#browser-tests-javascript).
+
 ## [1.2.0] - 2026-11-06
 
 ### Added
