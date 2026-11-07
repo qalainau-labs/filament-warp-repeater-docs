@@ -307,6 +307,20 @@ With multi-level rows, each summary is placed under its field, at the same posit
 
 The summary row is a Warp Repeater feature. When Warp Repeater is disabled or falls back to the native repeater, `warpSummary()` has no effect.
 
+Summaries are for display only. They are not part of the form's state, so they are not sent with the form and not saved. If you need a total in the database, for example an `invoices.total` column for reports, compute it on the server from the saved lines. The lines of a `relationship()` repeater are saved after the record, so they are not in the `$data` of `mutateFormDataBeforeSave()`; use the page's `afterSave()` and `afterCreate()`, or a model event of the line model:
+
+```php
+// EditInvoice (and afterCreate() in CreateInvoice)
+protected function afterSave(): void
+{
+    $this->record->update([
+        'total' => $this->record->lines()->sum(DB::raw('quantity * unit_price')),
+    ]);
+}
+```
+
+Computing the total in a hidden field of the form is not enough: deleting a line runs only the repeater's hooks, and the value comes from the browser.
+
 ## Spreadsheet editing
 
 Line items often come from a spreadsheet, and long tables are faster to fill with the keyboard. `warpSpreadsheet()` adds the keys people expect from Excel and Google Sheets:
@@ -383,6 +397,29 @@ When does a call count as a save?
 - On the create and edit pages of a Filament resource, `save` and `create` count only when the record was actually saved. Filament reports that with its `RecordSaved` event. If saving fails with validation errors, or a hook such as `beforeSave()` stops it with `$this->halt()`, the marks stay.
 - Your own `resetOn` methods, and forms outside resource pages, count when the call ends without validation errors.
 - Values you type while the save request is on its way are not part of that save, so they keep their marks.
+- A save from a Filament action's closure counts when the record was saved through the page's `save()` or `create()`, or when the action calls `WarpRepeater::markSaved()` (see below).
+
+**Saving from a Filament action.** When a button is a Filament action whose closure saves the form, the Livewire call is `mountAction` (or `callMountedAction` after a modal), not a method you can list in `resetOn`. On resource pages, calling the page's `save()` or `create()` in the closure is enough: the marks are cleared when the record was saved. If the action saves another way, tell the repeater with `WarpRepeater::markSaved()` after saving:
+
+```php
+use Filament\Actions\Action;
+use Qalainau\FilamentWarpRepeater\WarpRepeater;
+
+// on an edit page: saved through save(), nothing else to do
+Action::make('saveDraft')->action(function (): void {
+    $this->isDraft = true;
+    $this->save();
+});
+
+// saved without save()
+Action::make('saveDraft')->action(function (): void {
+    $this->record->update([...$this->form->getState(), 'is_draft' => true]);
+    $this->form->saveRelationships();
+    WarpRepeater::markSaved($this);
+});
+```
+
+`markSaved()` works on any Livewire page. A response with validation errors never clears the marks.
 
 When the form is filled again, for example by a header action that reloads the record with `fillForm()` or `refreshFormData()`, the new values become the reference. Filament gives the items new keys on every fill, so without this every line would show as removed and added again.
 

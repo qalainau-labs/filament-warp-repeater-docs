@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-07
+
+### Added
+
+- `WarpRepeater::markSaved($livewire)` tells the repeater that the form was saved, so `warpChangeMarks()` clears its
+  marks after a save that does not go through `save()`, `create()` or a `resetOn` method. See
+  [Unsaved changes](README.md#unsaved-changes).
+
+### Fixed
+
+- `warpChangeMarks()`: a Filament action whose closure saves the form through the page's `save()` (for example a "Save
+  draft" button) left the marks in place, because the Livewire call is `mountAction` and not a `resetOn` method. Any
+  response that reports a saved record now clears the marks; responses with validation errors still keep them.
+
+### Documentation
+
+- README "Column summaries": summaries are for display only and are not saved. How to store a total from the saved
+  lines in `afterSave()` / `afterCreate()` (the lines of a `relationship()` repeater are not in the `$data` of
+  `mutateFormDataBeforeSave()`).
+- Laravel Boost guideline: the stored-total advice no longer points to `mutateFormDataBeforeSave()`, which cannot see
+  the lines of a `relationship()` repeater. The guideline and the skill now mention pasting SKUs or other codes into a
+  `relationship()` select with `->searchable(['name', 'sku'])`, and saving from an action's closure.
+
 ## [1.3.0] - 2026-11-06
 
 ### Added
