@@ -85,6 +85,11 @@ A sticky header that stays below the panel's topbar, 64 lines down:
 
 Works in panels and in standalone Livewire components that use Filament's form builder.
 
+### Tested on
+
+Before each release, the full test suite runs on PHP 8.3, 8.4 and 8.5 × Laravel 12 and 13 × SQLite, MySQL, MariaDB and PostgreSQL, with each database at its newest and its oldest supported version: 42 combinations in all. A version is released only when every combination passes.
+[See the results for each release](https://github.com/qalainau-labs/filament-warp-repeater-docs/tree/main/test-runs).
+
 ## Installation
 
 > **Warp Repeater is a commercial plugin.** A license is required. After purchase you receive credentials for the private Composer repository.
