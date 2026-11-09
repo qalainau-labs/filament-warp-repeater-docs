@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-10
+
+### Changed
+
+- `warpSearch()`: the position ("2 of 14") is shown inside the search field, the previous and next buttons sit right after it, show their names when you point at them, and are disabled until something matches.
+- A `readOnly()` text input or textarea gets the gray background of a disabled field (without the shadow), on the canvas and in the live rows, so a calculated amount no longer looks like a field you can type in.
+
+### Fixed
+
+- JavaScript date pickers in languages written with an underscore (`zh_CN`, `zh_TW`, `pt_BR`) showed English month names ("Jan 16, 2027") in the rows drawn in the browser, next to "12月 14, 2026" in the rows from the server.
+
 ## [1.4.0] - 2026-11-07
 
 ### Added

@@ -444,8 +444,8 @@ Repeater::make('lines')
 
 ![Search](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/search.png)
 
-- Matching cells are highlighted, and the current match is outlined and scrolled into view. The position ("2 of 14") is shown next to the field.
-- Enter and Shift+Enter, or the arrow buttons, move to the next and previous match. Escape clears the search.
+- Matching cells are highlighted, and the current match is outlined and scrolled into view. The position ("2 of 14") is shown inside the field, at its right end.
+- Enter and Shift+Enter, or the arrow buttons right after the field, move to the next and previous match ("Next match" and "Previous match" show when you point at them). The buttons are disabled until something matches. Escape clears the search.
 - Ctrl/Cmd+F while the focus is in the repeater moves to the search field. Elsewhere on the page it opens the browser's find as usual.
 - The search looks at what the cells show: option labels for selects, the displayed date for date pickers, and the text of inputs. Case and accents are ignored (`zebra` finds `Zébra`). Toggles, checkboxes and password fields are not searched.
 - The matches follow the values as you type, paste, add or delete lines.
@@ -567,7 +567,9 @@ Every field works, because the fields you interact with are always Filament's ow
 | `Textarea` | The text, wrapped like the browser does, with the resize handle. |
 | Anything else | The HTML that Filament renders for the field, for example placeholders and text entries, hints, helper texts and error messages. |
 
-Values changed in the browser and not yet sent to the server are drawn from Livewire's state. The labels of searchable selects and the display format of JavaScript date pickers are computed in the browser until the next request.
+Values changed in the browser and not yet sent to the server are drawn from Livewire's state. The labels of searchable selects and the display format of JavaScript date pickers are computed in the browser until the next request, in the language of the picker (`zh_CN` writes "1月 16, 2027" like Filament does).
+
+A `readOnly()` text input or textarea (an amount the form calculates, for example) gets the gray background of a disabled field and no shadow, so it does not look like a field you can type in. Its text keeps the normal color. Filament's own repeater draws it like any other input.
 
 ## Multi-tenancy
 
