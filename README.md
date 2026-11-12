@@ -81,7 +81,7 @@ A sticky header that stays below the panel's topbar, 64 lines down:
 
 - PHP 8.3+
 - Laravel 12 or 13
-- Filament 5.x (Livewire 4)
+- Filament 5.8.3 or later (Livewire 4)
 
 Works in panels and in standalone Livewire components that use Filament's form builder.
 
