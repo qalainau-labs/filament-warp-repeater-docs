@@ -49,6 +49,7 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 - **Multi-level rows**: show each item on several lines, ledger style, with a multi-level header. The native repeater has no equivalent.
 - **Column summaries**: `->warpSummary()` on a field adds a summary row under its column (sum, average, min, max, count, checked), updated as you type.
 - **Spreadsheet editing**: `->warpSpreadsheet()` adds Enter and arrow keys to move between lines, pasting tables from Excel or Google Sheets (adding lines as needed), range selection, copy, and fill down with Ctrl/Cmd+D.
+- **Add lines from a list**: `RecordPicker` shows a list of your records (products, services…) beside the repeater or in a dialog. Drag a row onto the lines, or tick rows and add them, and each record becomes a line filled by your own code. The same product again raises the quantity of its line instead. Works with the native repeater too.
 - **Unsaved changes**: `->warpChangeMarks()` marks the cells and lines changed since the last save, and counts changed, new and removed lines.
 - **Search**: `->warpSearch()` adds a search field that finds text in every line, including the ones drawn on the canvas, which the browser's own find cannot see.
 - **Sorting and filters**: `->warpSorting()` and `->warpFilters()` add a button to each column header to sort the lines and filter them by value, like a spreadsheet. Only what you see changes: the saved order and the hidden lines stay as they are.
@@ -372,6 +373,98 @@ Notes:
 - Filament's `DeleteAction` uses Ctrl/Cmd+D as its keyboard shortcut. While a range is selected in the repeater, Ctrl/Cmd+D fills down instead. Without a range, the shortcut is left to Filament.
 - The repeater's items are filled in order, with columns counted in the order of the schema, the same as `table()` columns.
 
+## Add lines from a list
+
+Order and quote forms are filled from a catalog. `RecordPicker` is a schema component that lists the records of a query
+you write, next to the repeater. Drag a row onto the lines, or tick several rows and press “Add ticked rows”: each record
+becomes a new line, with the values your `fillUsing()` returns. When the product is already in the lines, its quantity
+goes up by one instead.
+
+![Add lines from a list](https://raw.githubusercontent.com/qalainau-labs/filament-warp-repeater-docs/main/art/add-from-list.png)
+
+```php
+use App\Models\Product;
+use Filament\Forms\Components\Repeater;
+use Filament\Schemas\Components\Grid;
+use Illuminate\Support\Number;
+use Qalainau\FilamentWarpRepeater\Picker\PickerColumn;
+use Qalainau\FilamentWarpRepeater\Picker\RecordPicker;
+
+Grid::make(['default' => 1, 'lg' => 3])->schema([
+    Repeater::make('lines')
+        ->relationship()
+        ->table([...])
+        ->schema([...])   // product_id, quantity, unit_price, amount
+        ->warp()
+        ->columnSpan(['default' => 1, 'lg' => 2]),
+
+    RecordPicker::make('product_list')
+        ->repeater('lines')
+        ->heading('Products')
+        ->query(fn () => Product::query()->where('is_active', true)->orderBy('name'))
+        ->tableColumns([
+            'sku' => 'SKU',
+            'name' => 'Name',
+            PickerColumn::make('price')
+                ->label('Price')
+                ->alignEnd()
+                ->formatStateUsing(fn ($state): string => Number::currency($state, 'USD')),
+        ])
+        ->searchable(['sku', 'name'])
+        ->fillUsing(fn (Product $record): array => [
+            'product_id' => $record->getKey(),
+            'quantity' => 1,
+            'unit_price' => $record->price,
+        ])
+        ->mergeDuplicates('product_id', increment: 'quantity'),
+]),
+```
+
+To keep the form narrow, open the list in a dialog from a button instead (put the picker above the repeater):
+
+```php
+RecordPicker::make('product_list')
+    ->repeater('lines')
+    ->modal()
+    ->modalButtonLabel('Add products')
+    // ...
+```
+
+| Method | What it does |
+| --- | --- |
+| `repeater('lines')` | The repeater to add lines to, by name. It must be in the same form (in a `Grid`, `Section` or any layout). Required. |
+| `query(fn () => ...)` | The records the list shows **and the only records that can be added**. Return an Eloquent query; scope it to the user and tenant here (see below). Required. |
+| `tableColumns([...])` | The columns of the list: `'attribute' => 'Label'`, or `PickerColumn::make('attribute')` with `label()`, `alignEnd()` (numbers) and `formatStateUsing(fn ($state, $record) => ...)`. Dot notation reads a relationship (`'category.name'`). Values are shown as text. |
+| `fillUsing(fn (Model $record): array => [...])` | The values of the new line, by field name. They are set in the order you write them, like typing: each field's `afterStateUpdated()` runs, so a field that computes an amount works as usual. Names without a field are ignored. The line gets the repeater's default values first. |
+| `mergeDuplicates('product_id', increment: 'quantity', by: 1)` | When a line already has the same `product_id` as the new one, add `by` to its `quantity` instead of adding a line (its `afterStateUpdated()` runs). With `increment: null`, the record is skipped. Without this method, every record adds a line. |
+| `searchable(['sku', 'name'])` | Adds a search field. The text is searched with `LIKE` in these columns. Pass a closure `fn (Builder $query, string $search) => ...` for your own search. |
+| `perPage(10)` | Rows per page of the list (at most 100). |
+| `modal()` | A button that opens the list in a dialog instead of showing it in the form. In the dialog, rows are ticked, not dragged. `modalButtonLabel()` changes the button. |
+| `heading()`, `addActionLabel()`, `height(480)` | The list's heading, the label of the “Add ticked rows” button, and a maximum height for the list (it scrolls inside). |
+| `draggable(false)` | Ticking only, no dragging. |
+| `authorizeUsing(fn (Model $record): bool => ...)` | An extra check for each record, for example a policy. Records that fail it are skipped. |
+
+How it behaves:
+
+- **Dragging** a row adds that record. If the row is ticked, dragging it adds every ticked row. The repeater gets a dashed
+  outline while a row is over it. Dragging needs a mouse or a trackpad: phones and tablets do not send drag events, so
+  the hint above the list only mentions ticking there.
+- **Nothing is saved until the form is saved.** The picker changes the repeater's state only, the same way as the
+  repeater's own “Add” button, and the form saves the lines as usual (including `relationship()` repeaters).
+  `maxItems()` and `addable(false)` are respected.
+- A short message above the list says what happened (“Added 2 lines.”, “1 line was already there, so its quantity went
+  up.”), because new lines are added at the end of the repeater, which is often below the screen.
+- It works with any table repeater, with or without `->warp()`, and in standalone Livewire forms as well as panels.
+- The list stays in view while the page scrolls (it sticks under the top bar). In a narrow column, give the repeater a
+  width with `warpTableWidth()` so that it scrolls inside its column instead of covering the list.
+
+Security: the browser only sends the keys of the records to add. The server reads them again with your `query()`
+(plus `authorizeUsing()`), so a key outside the query, of another tenant, or of a record that does not exist adds
+nothing. At most 100 records are added per call, and keys that do not have the shape of the model's key (a number, or
+a UUID or ULID with `HasUuids` / `HasUlids`) are ignored before the query runs. When the picker is hidden or disabled,
+or the repeater is hidden or disabled, the server adds nothing. Keep authorization in `query()`: hiding a column does
+not hide a record.
+
 ## Unsaved changes
 
 In a long table it is easy to lose track of what you have changed. `warpChangeMarks()` marks it until the form is saved:
@@ -579,6 +672,7 @@ Warp Repeater works in panels with [multi-tenancy](https://filamentphp.com/docs/
 - **Pasting** a label or a key into a select (`warpSpreadsheet()`) looks the option up the same way, with the search of a searchable `relationship()` select. A label or key of another tenant is not an option, so it is skipped and the old value stays.
 - **Filling down** (Ctrl/Cmd+D) copies the state as it is. When the form is saved, Filament's validation checks every select value against its options, so a value of another tenant is rejected with a validation error.
 - **Lines of a `relationship()` repeater** are loaded and saved by Filament, from the record of the page.
+- **`RecordPicker`** lists and adds only the records of your `query()`. Filament adds its tenant scope to models that have a resource in the panel, so `Product::query()` is scoped in that case; otherwise filter by `Filament::getTenant()` in the query yourself. Keys of other tenants sent from the browser add nothing.
 
 Things to check in your own code:
 

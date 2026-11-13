@@ -5,6 +5,17 @@ All notable changes to `qalainau/filament-warp-repeater` will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-11-13
+
+### Added
+
+- `RecordPicker`: a list of your records (products, services…) beside the repeater or in a dialog (`modal()`). Drag a
+  row onto the lines, or tick rows and press “Add ticked rows”, and each record becomes a new line with the values of
+  `fillUsing()`. With `mergeDuplicates('product_id', increment: 'quantity')`, a product that is already in the lines
+  raises its quantity instead. The keys are read again on the server with your `query()`, so only its records can be
+  added, and nothing is saved until the form is saved. Works with the native repeater too. Nothing changes for forms
+  that do not add the component. See [Add lines from a list](README.md#add-lines-from-a-list).
+
 ## [1.5.1] - 2026-11-12
 
 ### Changed
