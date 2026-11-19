@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-11-20
+
+### Fixed
+
+- **Console error `warpRepeater is not defined`**: on pages where Livewire re-renders the component inside another Alpine component, the browser console could show `warpRepeater is not defined` before the component's script had arrived. Empty components are now registered up front, and the real ones replace them as soon as they load. No visible change.
+
 ## [1.7.0] - 2026-11-19
 
 ### Added
