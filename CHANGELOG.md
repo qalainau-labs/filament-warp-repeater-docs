@@ -5,6 +5,18 @@ All notable changes to `qalainau/filament-warp-repeater` will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.7.0] - 2026-11-19
+
+### Added
+
+- `RecordPicker::fillEmptyItems()`: records you pick go into the lines nobody has touched yet (every field still holds the value a new line starts with, `default()`s included) before any new line is added, from the top. With `defaultItems(1)`, the blank first line no longer stays behind and stops the save. Off by default, so existing forms behave as before.
+
+### Fixed
+
+- **Copying cells**: a cell whose text contains a lone carriage return (`\r`, e.g. text that came from an old Mac file) is now quoted when copied, so pasting it into Excel or Google Sheets no longer splits it into extra rows.
+
 ## [1.6.2] - 2026-11-16
 
 ### Fixed

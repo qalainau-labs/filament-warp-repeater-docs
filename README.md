@@ -442,6 +442,7 @@ RecordPicker::make('product_list')
 | `modal()` | A button that opens the list in a dialog instead of showing it in the form. In the dialog, rows are ticked, not dragged. `modalButtonLabel()` changes the button. |
 | `heading()`, `addActionLabel()`, `height(480)` | The list's heading, the label of the “Add ticked rows” button, and a maximum height for the list (it scrolls inside). |
 | `draggable(false)` | Ticking only, no dragging. |
+| `fillEmptyItems()` | Fill the lines nobody has touched yet before adding new ones. A line counts as untouched when every field still holds the value a newly added line starts with (field `default()`s included): typing into any field, even one, makes it a normal line. Several empty lines are filled from the top; records beyond them are added as new lines as before, and `maxItems()` counts correctly (filling an empty line adds nothing). Use it with `defaultItems(1)` so the blank first line of a new form does not stay behind and fail validation. Takes `bool|Closure`; off by default. |
 | `authorizeUsing(fn (Model $record): bool => ...)` | An extra check for each record, for example a policy. Records that fail it are skipped. |
 
 How it behaves:
