@@ -35,6 +35,12 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 
 ## Features
 
+- Sections with editable headings and per-section subtotals, using a single text column on each line.
+
+- Import CSV / TSV / Excel files and export all lines as CSV or Excel.
+
+- **Bulk actions** — select lines to delete, duplicate, or set a column value in one server action.
+
 - **Drop-in**: one method on the repeater you already have. Same schema, same `TableColumn` headers, same validation, actions and saving, including `relationship()` repeaters and `orderColumn()`.
 - **Looks exactly like the native repeater.** The canvas draws what Filament renders: each field is rendered by Filament, measured in a hidden table with the same markup and CSS, and drawn from that. Compared pixel by pixel with the native repeater, in light and dark mode, on Chrome, Firefox and Safari.
 - **Behaves like the native repeater**, because the rows you interact with are the native fields:
@@ -259,6 +265,105 @@ Repeater::make('lines')
 
 Multi-level rows are a Warp Repeater layout. When Warp Repeater is disabled, when it falls back to the native repeater, and in narrow containers where Filament stacks each item as a card, the items are shown in the regular layout.
 
+## Calculated fields
+
+Use `warpFormula()` to update a line amount while typing, without the round trip required by `live()`. Names in the expression are the state names of fields in the same line's schema.
+
+```php
+TextInput::make('amount')
+    ->numeric()
+    ->warpFormula('quantity * unit_price');
+
+TextInput::make('amount_with_tax')
+    ->warpFormula('round(amount * 1.1, 0)');
+
+TextInput::make('amount')
+    ->warpFormula('quantity * unit_price', decimals: 2);
+```
+
+| Syntax | Example |
+| --- | --- |
+| Numbers and field names | `quantity * unit_price`, `1.5` |
+| Arithmetic, in the usual precedence | `a + b - c * d / 2` |
+| Parentheses and unary minus | `(a + b) * -c` |
+| Round, with an optional literal decimal count | `round(amount)`, `round(amount, 2)` |
+| Minimum / maximum (2–8 arguments) | `min(a, b)`, `max(a, b, c)` |
+| Absolute value | `abs(discount)` |
+
+Empty, missing or nonnumeric inputs produce `null`, as do division by zero and nonfinite results. Numeric strings with grouping spaces, commas or underscores (such as `"1,250.50"`) are accepted. `decimals:` rounds the final result; omitting it leaves the result unrounded. `round()` rounds halves away from zero.
+
+Calculated fields are automatically read only: typing, spreadsheet paste and fill down cannot overwrite them. A calculated field may reference another calculated field; dependencies are evaluated in order. Unknown field names and dependency cycles throw an `InvalidArgumentException` when the Warp payload is rendered.
+
+The browser updates Livewire state locally, without sending a request. Initial values, added or cloned lines, pasted inputs, `live()` responses and changes made by `afterStateUpdated()` are recalculated. On dehydration, the server calculates every dependency again from the line's state. It does not trust calculated values sent by the browser.
+
+Combine a calculated amount with a column summary:
+
+```php
+TextInput::make('amount')->numeric()
+    ->warpFormula('quantity * unit_price', decimals: 2)
+    ->warpSummary(Summary::sum()->label('Total')->decimals(2));
+```
+
+When Warp is disabled or falls back to the native repeater, browser calculation does not run. The field stays read only and server calculation still runs when the form is saved.
+
+Replace hooks used only to calculate an amount:
+
+```php
+// Before: repeat this hook on each source field.
+TextInput::make('quantity')->numeric()->live()
+    ->afterStateUpdated(fn ($get, $set) => $set('amount', $get('quantity') * $get('unit_price')));
+
+// After: source fields no longer need live() or calculation hooks.
+TextInput::make('quantity')->numeric();
+TextInput::make('unit_price')->numeric();
+TextInput::make('amount')->numeric()->warpFormula('quantity * unit_price', decimals: 2);
+```
+
+## Sections with subtotals
+
+Group quote, invoice or construction lines under headings such as “Work A” and “Work B”. Add one string column
+(`section`) to the line table; headings and subtotals are display elements and never become repeater items.
+When there are no lines, the native repeater shows an Add section button beside its label; adding the first section switches to the Warp table.
+
+```php
+Repeater::make('lines')
+    ->table([
+        TableColumn::make('Section'),
+        TableColumn::make('Item'),
+        TableColumn::make('Qty'),
+        TableColumn::make('Amount'),
+    ])
+    ->schema([
+        TextInput::make('section'),
+        TextInput::make('item'),
+        TextInput::make('quantity')->numeric(),
+        TextInput::make('amount')->numeric()->warpSummary(Summary::sum()),
+    ])
+    ->warp()
+    ->warpSections('section', subtotals: true, collapsible: true, untitled: 'Other');
+```
+
+`warpSections('section')` enables subtotals by default; collapsing is optional. The field must name a `TextInput`
+or single `Select` in the schema. Empty values appear under “No section”, or your `untitled` label. Consecutive equal
+values form one section; two separated runs with the same name remain separate. The section field is hidden from
+Warp's table columns and remains an ordinary field when Warp falls back to the native repeater.
+
+Click a heading to rename just that consecutive section. Its line count and **Add a line** button appear beside it;
+new lines inherit the section and the schema defaults, up to `maxItems()`. **Add section** asks for a name and appends
+a new line. Drag a line onto a line in another section to move it there and adopt that section's value. These actions
+respect editable fields and their update hooks. With `warpSpreadsheet()`, each rename, addition or drag is one Undo step.
+Collapsing only changes browser display and is never saved.
+
+Each subtotal uses the field's `warpSummary()` definitions (`sum`, `average`, `min`, `max`, `count`, `checked`),
+including their labels and formatting. Filtered-out lines are excluded from section subtotals; the existing overall
+footer still includes every line. Search highlights matches as usual. Section headings and subtotals are hidden while
+`warpSorting()` has an active column sort and return when the sort is cleared. With `warpMultiLevel()` they remain
+full-width bands; on narrow screens they surround the stacked cards. They share the canvas scroll coordinates so
+virtual rows and real inputs stay aligned. Calculated fields, bulk actions, fill, import and export remain available;
+import/export retain the section as a normal data column.
+
+Subtotals are for display. Calculate any subtotal you need to store from the saved lines on the server.
+
 ## Column summaries
 
 Add `->warpSummary()` to a field in the repeater's schema to show a summary row under its column. The row is part of the table, below the last line, in the header's colors.
@@ -327,6 +432,84 @@ protected function afterSave(): void
 
 Computing the total in a hidden field of the form is not enough: deleting a line runs only the repeater's hooks, and the value comes from the browser.
 
+## Bulk actions
+
+Select multiple lines to delete them, duplicate them, or set one column to the same value:
+
+```php
+Repeater::make('lines')
+    ->table([TableColumn::make('Product'), TableColumn::make('Quantity')])
+    ->schema([TextInput::make('product'), TextInput::make('quantity')->numeric()])
+    ->cloneable()
+    ->warp()
+    ->warpBulkActions();
+
+// Enable only these operations:
+$repeater->warpBulkActions(['delete', 'clone']);
+```
+
+The argument is `bool|array|Closure`: `true` enables `delete`, `clone`, and `set`; an array enables only the named
+operations; `false` disables selection and the toolbar. It is off by default. A closure is evaluated by Filament.
+The selection column appears before line numbers. Shift-click selects a range in the displayed order; the header
+checkbox selects only currently displayed lines, including when filters are active. Search highlights matches;
+it does not hide lines. Clear selection leaves the form values alone.
+
+Deletion requires confirmation and respects `deletable()` and `minItems()`. Duplication requires `cloneable()` and
+respects `maxItems()`; each copy is inserted immediately after its source using the same raw state copy as Filament.
+Disabled buttons explain the item limit in a tooltip. Set value lists editable columns and provides select options
+when available. Other fields accept text using the same conversions as spreadsheet paste, including numbers,
+dates, toggles, and select labels. Each changed field runs `afterStateUpdated()` as it does on paste.
+
+All three operations use one server action per request. The server discards item keys absent from the current
+state, checks that bulk actions and the requested operation are enabled, refuses disabled repeaters, checks item
+limits and delete/clone permissions, and rechecks field visibility, disabled/read-only status, and calculated-field
+status for each selected line. Unknown columns and select values outside the available options are ignored.
+Selection clears after the action; change marks, summaries, and calculated fields follow the updated state.
+
+Nothing is persisted until the form is saved. Selected lines hidden by a later filter remain selected and are
+included in operations; the count in the toolbar includes them. Bulk controls are available in the Warp table
+layout; an automatic fallback to the native repeater uses Filament's usual controls.
+
+## Import and export
+
+Let users bring line items from a spreadsheet and download the current lines without saving the form first.
+When there are no lines, the native repeater shows only Import from file beside its label; importing the first lines switches to the Warp table, where export becomes available.
+
+```php
+Repeater::make('lines')
+    ->table([TableColumn::make('Product'), TableColumn::make('Qty')])
+    ->schema([TextInput::make('product'), TextInput::make('quantity')->numeric()])
+    ->warp()
+    ->warpImport()
+    ->warpExport();
+
+// Offer CSV only, with a custom download name (without the extension).
+$repeater->warpExport(['csv'], fileName: 'order-lines');
+```
+
+Both macros are off by default. `warpImport(bool|Closure $condition = true)` enables the file button;
+`warpExport(bool|array|Closure $formats = true, string|Closure|null $fileName = null)` offers both `xlsx` and `csv`
+when passed `true`, or only the formats in the array. The default file name is the slug of the repeater label.
+These are Repeater macros; the included PHPStan extension discovers their argument and return types automatically.
+
+Files are read entirely in the browser: CSV and TSV in UTF-8 or Shift_JIS, and the first sheet of an `.xlsx` workbook
+(including Excel date cells). The first row contains column titles. Titles match a TableColumn label or field name,
+ignoring case and surrounding whitespace. Unmatched columns are ignored; a file with no matching columns changes nothing.
+A confirmation lists the matching and unused columns and offers appending or replacing the current lines.
+Replacement is unavailable with `deletable(false)`. Files are limited to 5 MB and 1,000 data lines.
+
+Import works without `warpSpreadsheet()` and uses the same server action and conversions as pasting: selects accept
+keys or labels, numbers accept currency symbols and separators, dates and toggles use paste conversion. Hidden,
+disabled, read-only and formula fields are skipped; defaults, `afterStateUpdated()` and `maxItems()` still apply.
+Formula-like text stays text and is never evaluated; invalid numeric values are skipped.
+
+Exports include all current lines, including lines hidden by search or filters, in the table's sorted order when sorted.
+Headers use TableColumn labels; selects use labels, toggles use `TRUE` / `FALSE`, dates use `Y-m-d`, and numbers remain
+numeric. Formula columns are recalculated on the server; summary footer rows and hidden fields are excluded.
+Values come from server form state, never from an export values argument supplied by the browser. Downloads use
+Livewire's streamed download response. CSV formula prefixes are escaped and XLSX strings are written as literal cells.
+Import changes the form only: save the form as usual to persist the lines.
+
 ## Spreadsheet editing
 
 Line items often come from a spreadsheet, and long tables are faster to fill with the keyboard. `warpSpreadsheet()` adds the keys people expect from Excel and Google Sheets:
@@ -349,9 +532,15 @@ Repeater::make('lines')
 | Ctrl/Cmd+C | With a range selected: copy it as tab-separated text, ready to paste into a spreadsheet. |
 | Ctrl/Cmd+V | Paste cells copied from a spreadsheet (see below). |
 | Ctrl/Cmd+D | With a range selected: copy the values of its first line to the other lines. |
+| Ctrl/Cmd+Z | Undo the last repeater operation. |
+| Ctrl/Cmd+Shift+Z, Ctrl+Y | Redo the last undone operation. |
 | Escape | Clear the range. |
 
 Tab and Shift+Tab still move between fields, and the arrow keys inside dropdowns, date pickers and select search fields keep working as usual.
+
+**Undo and redo.** While focus is inside this repeater, undo and redo keep up to 50 operations: spreadsheet paste, fill down, the fill handle, adding, deleting or duplicating lines, bulk actions with `warpBulkActions()`, and individual field edits when you leave the field. While typing in a text field, the browser keeps its own undo history; selecting a range or leaving the field switches to repeater history. A new operation clears redo history. Saving, navigating away, refilling the form, or an update from another field that rewrites the repeater clears history. Undo restores editable fields only; disabled, read-only, hidden and `warpFormula()` fields stay protected, and restored deleted lines use defaults for those fields. Item limits still apply.
+
+**Fill handle.** Select a range with Shift+click or Shift+↓, then drag the small square at its bottom-right corner downward. A frame previews the destination. Only existing lines below the selection are filled; dragging upward does not extend the range and no lines are added. Evenly spaced numbers continue their sequence (a single number repeats), dates continue by their interval (one date advances by a day), and text ending in a number continues that number, preserving leading zeros. Other values repeat in order; selects, toggles and checkboxes always repeat. The handle is hidden on touch devices (`pointer: coarse`).
 
 **Pasting.** Copy cells in Excel, Numbers or Google Sheets and paste them into any field of the repeater. The values fill the fields to the right and below, and lines are added at the end when there are not enough of them, up to `maxItems()` and at most 1,000 lines per paste. To paste one value into many cells, select a range and paste. Each value is turned into the field's state:
 

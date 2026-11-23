@@ -5,7 +5,29 @@ All notable changes to `qalainau/filament-warp-repeater` will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.8.0] - 2026-11-23
+
+### Added
+
+- `warpSections()` groups consecutive line items with editable headings, line insertion, optional collapsing and per-section subtotals.
+
+- Import line items from CSV, TSV or Excel with column matching and append/replace confirmation; export all lines to CSV or Excel with safe literal values.
+- `warpSpreadsheet()` undo and redo with up to 50 operations, native text editing undo, protected server restoration, and history reset after saves or external updates.
+- A downward fill handle for spreadsheet ranges, with number, date and numbered text series, repetition for other values, and a destination preview.
+
+- Opt-in `warpBulkActions()` for line selection, bulk deletion, duplication, and column value updates, with server-side permissions and item limits.
+
+- `warpFormula()` calculates read-only fields from other fields in the same line while typing, without a server request, with dependency ordering, optional rounding, column summaries and trusted server recalculation on save.
+
+### Fixed
+
+- Narrow time inputs clip canvas text at the same point as the native clock button, avoiding stray text pixels when hovering a row.
+
+- Empty repeaters use the native Filament add button again, including with spreadsheet editing, bulk actions, import/export or sections enabled.
+
+- **Shortened text cut off without the ellipsis on canvas rows**: when a field cuts a long value with `text-overflow: ellipsis` (Warp Tree's `SelectTree` showing a long category name in a narrow column), the real field showed `Deferred revenue fro…` but the rows drawn on the canvas showed `Deferred revenue fro` cut mid-letter, so a row changed look when the mouse moved over it. The canvas now ends such a line with `…` at the same place.
+- **Fields from other plugins drawn wrong on the canvas rows**: a field that extends Filament's `Select` or `DatePicker` but draws its own HTML (Warp Tree's `SelectTree`, Warp DatePicker's `WarpDatePicker`, and fields of the same kind from other packages) showed *Select an option* or the raw value (`2026-12-02`) on every row drawn on the canvas, and the browser console showed `Livewire Entangle Error: … cannot be found` each time the page opened. These fields are now drawn from a copy set up with each row's own value, so every row looks like the real field, including after you change a value in the browser.
+- **Quick Look eye missing on middle rows**: with Warp Quick Look's `->quickLook()` on a `Select` inside a Warp table repeater, the eye button showed only on the first and last rows (the rows built from real fields) and the rows between showed an empty box. Every row now draws the eye whenever its select has a value.
 
 ## [1.7.1] - 2026-11-20
 
