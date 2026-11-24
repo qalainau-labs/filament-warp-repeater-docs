@@ -5,6 +5,12 @@ All notable changes to `qalainau/filament-warp-repeater` will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-11-25
+
+### Added
+
+- `warpFormula()` supports `rounddown(x, n)` and `roundup(x, n)`, which round toward and away from zero like Excel's `ROUNDDOWN` and `ROUNDUP`, so negative lines such as discounts are rounded by their size. The browser, the server recalculation on save and `warpExport()` give the same result, including values such as `4.35` and `0.1 + 0.2` that floating-point numbers cannot store exactly. `round()`, `rounddown()` and `roundup()` also accept a negative literal digit count such as `-2` to round to hundreds.
+
 ## [1.8.0] - 2026-11-23
 
 ### Added

@@ -279,6 +279,9 @@ TextInput::make('amount_with_tax')
 
 TextInput::make('amount')
     ->warpFormula('quantity * unit_price', decimals: 2);
+
+TextInput::make('amount')
+    ->warpFormula('rounddown(quantity * unit_price, 0)');
 ```
 
 | Syntax | Example |
@@ -286,11 +289,41 @@ TextInput::make('amount')
 | Numbers and field names | `quantity * unit_price`, `1.5` |
 | Arithmetic, in the usual precedence | `a + b - c * d / 2` |
 | Parentheses and unary minus | `(a + b) * -c` |
-| Round, with an optional literal decimal count | `round(amount)`, `round(amount, 2)` |
+| Round, with an optional literal decimal count | `round(amount)`, `round(amount, 2)`, `round(amount, -2)` |
+| Round toward zero / away from zero, like Excel's `ROUNDDOWN` / `ROUNDUP` | `rounddown(amount, 0)`, `roundup(amount, 2)` |
 | Minimum / maximum (2–8 arguments) | `min(a, b)`, `max(a, b, c)` |
 | Absolute value | `abs(discount)` |
 
 Empty, missing or nonnumeric inputs produce `null`, as do division by zero and nonfinite results. Numeric strings with grouping spaces, commas or underscores (such as `"1,250.50"`) are accepted. `decimals:` rounds the final result; omitting it leaves the result unrounded. `round()` rounds halves away from zero.
+
+### Rounding down and up
+
+`rounddown(x, n)` and `roundup(x, n)` work like Excel's `ROUNDDOWN` and `ROUNDUP`. Use them when a line amount must follow a fixed rounding rule, for example a company that always truncates fractions of a yen or a cent.
+
+| Formula | Value | Result |
+| --- | --- | --- |
+| `rounddown(amount, 0)` | `999.99` | `999` |
+| `rounddown(amount, 0)` | `-10.5` | `-10` |
+| `roundup(amount, 0)` | `2.1` | `3` |
+| `roundup(amount, 0)` | `-10.5` | `-11` |
+| `rounddown(amount, 2)` | `2.675` | `2.67` |
+| `rounddown(amount, -2)` | `1234` | `1200` |
+
+- `x` is any expression. `n` is the number of decimal places: `0` keeps whole numbers, `2` keeps two decimals, and a negative `n` rounds to tens (`-1`), hundreds (`-2`) and so on. `n` must be written as a number, not a field name; it defaults to `0`. A non-integer `n` is cut to an integer, as in Excel.
+- They work on the size of the number and keep its sign, so a negative line (a discount or a return) is rounded the same way as a positive one: `rounddown` moves toward zero and `roundup` moves away from zero. This is different from PHP's `floor()` and `ceil()`, which always move down or up the number line. If you need a negative amount to go the other way, round the absolute value and put the sign back in a separate field.
+- Like Excel, the value is first reduced to 15 significant digits, so binary floating-point noise does not move the result by one step: `rounddown(4.35, 2)` is `4.35` and `roundup(0.1 + 0.2, 1)` is `0.3`.
+- The browser and the server use the same rules, so the value shown while typing, the value saved (recalculated on the server) and the value in `warpExport()` files are the same.
+- To follow a setting such as the company's rounding mode, build the formula string in PHP:
+
+```php
+TextInput::make('amount')
+    ->numeric()
+    ->warpFormula(match ($company->rounding) {
+        Rounding::Down => 'rounddown(quantity * unit_price, 0)',
+        Rounding::Up => 'roundup(quantity * unit_price, 0)',
+        Rounding::Nearest => 'round(quantity * unit_price, 0)',
+    });
+```
 
 Calculated fields are automatically read only: typing, spreadsheet paste and fill down cannot overwrite them. A calculated field may reference another calculated field; dependencies are evaluated in order. Unknown field names and dependency cycles throw an `InvalidArgumentException` when the Warp payload is rendered.
 
