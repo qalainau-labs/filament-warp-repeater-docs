@@ -296,6 +296,8 @@ TextInput::make('amount')
 
 Empty, missing or nonnumeric inputs produce `null`, as do division by zero and nonfinite results. Numeric strings with grouping spaces, commas or underscores (such as `"1,250.50"`) are accepted. `decimals:` rounds the final result; omitting it leaves the result unrounded. `round()` rounds halves away from zero.
 
+By default, `warpFormula()` displays thousands separators using the page's language (for example, `3,750.00` in English). This applies only to `TextInput` fields and sets their input type to `text`, while keeping `numeric()` server validation. Saved values, clipboard and spreadsheet copies, and `warpExport()` remain numeric. Disable display grouping with `->warpFormula('quantity * unit_price', decimals: 2, grouping: false)`. When Warp is disabled or falls back to the native repeater, values are not grouped, but the field still uses `type="text"`.
+
 ### Rounding down and up
 
 `rounddown(x, n)` and `roundup(x, n)` work like Excel's `ROUNDDOWN` and `ROUNDUP`. Use them when a line amount must follow a fixed rounding rule, for example a company that always truncates fractions of a yen or a cent.

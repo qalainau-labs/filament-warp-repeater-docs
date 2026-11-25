@@ -5,6 +5,16 @@ All notable changes to `qalainau/filament-warp-repeater` will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-11-25
+
+### Added
+
+- `warpFormula(..., grouping: false)` keeps a calculated field without thousands separators.
+
+### Changed
+
+- Calculated `TextInput` fields made with `warpFormula()` now show thousands separators in the page's language (`12,000` in English, `12.000` in German), both on the canvas and in the focused row. Saved values, Livewire state, clipboard and spreadsheet copies and `warpExport()` files stay plain numbers. Such fields now use `type="text"` instead of `numeric()`'s `type="number"`, because a number input cannot hold a separator; `numeric()` validation still applies.
+
 ## [1.9.0] - 2026-11-25
 
 ### Added
