@@ -53,6 +53,7 @@ On an order form with a `relationship()` repeater, a searchable select, a JavaSc
 - **Sticky header**: `->warpStickyHeader()` keeps the header row on screen while the page scrolls, so you always know which column you are typing in, even 500 lines down. The native repeater has no equivalent.
 - **Validation errors**: saving scrolls to the first line with an error, like the native form. `->warpErrorNavigation()` adds "3 lines have errors" with previous and next buttons, and error markers along the table.
 - **Multi-level rows**: show each item on several lines, ledger style, with a multi-level header. The native repeater has no equivalent.
+- **Thousands separators**: `->warpGrouping()` on a `numeric()` field shows `12,000` while the value stays `12000`, the same on every line.
 - **Column summaries**: `->warpSummary()` on a field adds a summary row under its column (sum, average, min, max, count, checked), updated as you type.
 - **Spreadsheet editing**: `->warpSpreadsheet()` adds Enter and arrow keys to move between lines, pasting tables from Excel or Google Sheets (adding lines as needed), range selection, copy, and fill down with Ctrl/Cmd+D.
 - **Add lines from a list**: `RecordPicker` shows a list of your records (products, services…) beside the repeater or in a dialog. Drag a row onto the lines, or tick rows and add them, and each record becomes a line filled by your own code. The same product again raises the quantity of its line instead. Works with the native repeater too.
@@ -297,6 +298,38 @@ TextInput::make('amount')
 Empty, missing or nonnumeric inputs produce `null`, as do division by zero and nonfinite results. Numeric strings with grouping spaces, commas or underscores (such as `"1,250.50"`) are accepted. `decimals:` rounds the final result; omitting it leaves the result unrounded. `round()` rounds halves away from zero.
 
 By default, `warpFormula()` displays thousands separators using the page's language (for example, `3,750.00` in English). This applies only to `TextInput` fields and sets their input type to `text`, while keeping `numeric()` server validation. Saved values, clipboard and spreadsheet copies, and `warpExport()` remain numeric. Disable display grouping with `->warpFormula('quantity * unit_price', decimals: 2, grouping: false)`. When Warp is disabled or falls back to the native repeater, values are not grouped, but the field still uses `type="text"`.
+
+### Thousands separators in number inputs
+
+`warpGrouping()` shows the numbers people type, such as unit prices and quantities, with thousands separators in the page's language: `12,000` in English, `12.000` in German. Large amounts are easier to read and to check against a quote or an invoice.
+
+```php
+TextInput::make('unit_price')
+    ->numeric()
+    ->warpGrouping();
+
+TextInput::make('quantity')
+    ->integer()
+    ->warpGrouping();
+```
+
+| Argument | Default | |
+| --- | --- | --- |
+| `$condition` | `true` | `false` turns it off, for example on a field shared by several forms. |
+
+How it behaves:
+
+- Lines drawn on the canvas and the line you are typing in look the same. A field that is not focused shows `12,000`; when you click it or move to it with Tab or the arrow keys, it shows the plain number (`12000`) to edit. With `warpSpreadsheet()`, Enter and the arrow keys select it, so typing replaces it. When you leave it, it shows `12,000` again.
+- Only the display changes. Livewire state, `afterStateUpdated()`, `live()`, saved values, `warpFormula()`, `warpSummary()`, clipboard and spreadsheet copies and `warpExport()` files all keep plain numbers. Decimals are shown as stored (`12000.5` shows `12,000.5`).
+- It works on `TextInput` fields with `numeric()` or `integer()`, called before or after `warpGrouping()`. On other text inputs it does nothing, so codes like `00123` keep their zeros. Any other component throws an `InvalidArgumentException`.
+
+Notes:
+
+- A grouped field uses `type="text"` instead of `type="number"`, because a number input cannot hold a separator. `inputmode` stays `decimal` (`numeric` for `integer()`), so phones still show a number keyboard, and the `numeric` / `integer` validation still applies. The browser's up and down arrows of a number input are not shown.
+- Type the number without separators. A value typed as `12,000` is rejected by `numeric()` validation, as in any Filament number field.
+- Calculated fields made with `warpFormula()` are grouped already and do not need `warpGrouping()`.
+- When Warp is disabled or falls back to the native repeater, values are not grouped, but the field still uses `type="text"`.
+- Filament's `mask()` (for example with `$money()`) formats only the line you are typing in, so lines drawn on the canvas would look different. Use `warpGrouping()` with Warp Repeater instead.
 
 ### Rounding down and up
 

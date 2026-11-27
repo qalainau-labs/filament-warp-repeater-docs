@@ -5,6 +5,18 @@ All notable changes to `qalainau/filament-warp-repeater` will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.11.0] - 2026-11-28
+
+### Added
+
+- `TextInput::warpGrouping()` shows `numeric()` and `integer()` fields with thousands separators in the page's language (`12,000` in English, `12.000` in German), the same on canvas lines and on the line being edited. The focused field shows the plain number to type over. Livewire state, saved values, clipboard and spreadsheet copies and `warpExport()` stay plain numbers. The field uses `type="text"`; `numeric()` validation still applies.
+
+### Fixed
+
+- With `warpBulkActions()` and `warpImport()` / `warpExport()`, the bulk hint and the import and export buttons share one row above the table instead of taking two rows.
+
 ## [1.10.0] - 2026-11-25
 
 ### Added
