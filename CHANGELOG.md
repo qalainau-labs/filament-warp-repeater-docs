@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.1] - 2026-11-28
+
+### Fixed
+
+- A table with `warpTableWidth()` and no `warpStickyHeader()` no longer makes the box around it scroll sideways too (for example a Warp Split View pane, or the whole page). The screen-reader label of the actions column header was placed past the table's right edge, outside the table's own scroll area.
+
 ## [1.11.0] - 2026-11-28
 
 ### Added
