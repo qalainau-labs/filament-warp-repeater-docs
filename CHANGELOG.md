@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.2] - 2026-11-28
+
+### Fixed
+
+- The row numbers of `warpRowNumbers()` are easier to read in light mode: they now use the same gray as the `#` header (contrast 4.8:1 on white, was 2.6:1).
+
 ## [1.11.1] - 2026-11-28
 
 ### Fixed
